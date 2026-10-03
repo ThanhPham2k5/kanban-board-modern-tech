@@ -5,36 +5,61 @@ import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/ad
 import ListContainer from "./ListContainer";
 import { Button } from "./ui/button";
 import { Plus } from "lucide-react";
+import {
+  addListAction,
+  updateListAction,
+  deleteListAction,
+} from "@/actions/list-actions";
 
-const mockList = [
-  { id: "list-1", title: "Cần làm" },
-  { id: "list-2", title: "Đang làm" },
-  { id: "list-3", title: "Hoàn thành" },
-];
+export default function BoardView({ initialLists }: { initialLists: any[] }) {
+  const [lists, setLists] = useState(initialLists);
 
-export default function BoardView() {
-  const [lists, setLists] = useState(mockList);
+  // re-sync state if database changed - multiple screens case
+  useEffect(() => {
+    setLists(initialLists);
+  }, [initialLists]);
 
-  // temp list CRUD functions
-  const addList = () => {
+  // list CRUD functions
+  const addList = async () => {
+    const tempId = `list-${Date.now()}`;
+
     const newList = {
-      id: `list-${Date.now()}`, // random list id
+      id: tempId, // random list id for optismic UI
       title: "Danh sách mới",
+      order: lists.length + 1,
     };
     setLists([...lists, newList]);
+
+    // save to database and update real ID
+    try {
+      const savedList = await addListAction(
+        newList.title,
+        newList.order.toString(),
+      );
+      setLists((prevLists) =>
+        prevLists.map((list) =>
+          list.id === tempId ? { ...list, id: savedList.id } : list,
+        ),
+      );
+    } catch (error) {
+      setLists((prevLists) => prevLists.filter((list) => list.id !== tempId));
+      console.log("Thêm list không thành công ", error);
+    }
   };
 
-  const updateList = (id: string, newTitle: string) => {
+  const updateList = async (id: string, newTitle: string) => {
     setLists(
       lists.map((list) =>
         list.id === id ? { ...list, title: newTitle } : list,
       ),
     );
+    await updateListAction(id, newTitle);
   };
 
-  const deleteList = (id: string) => {
+  const deleteList = async (id: string) => {
     if (confirm("Bạn có chắc muốn xoá danh sách này?")) {
       setLists(lists.filter((list) => list.id !== id));
+      await deleteListAction(id);
     }
   };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   draggable,
   dropTargetForElements,
@@ -109,7 +109,7 @@ export default function ListContainer({
       <div className="p-2 pt-1">
         <Button
           variant="ghost"
-          className="w-full justify-start text-muted-foreground hover:text-foreground"
+          className="w-full justify-start text-muted-foreground hover:text-foreground cursor-pointer"
         >
           <Plus className="h-4 w-4 mr-2" />
           Thêm thẻ
