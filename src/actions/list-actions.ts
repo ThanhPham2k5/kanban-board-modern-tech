@@ -37,3 +37,14 @@ export async function deleteListAction(id: string) {
 
   revalidatePath("/");
 }
+
+export async function updateListOrderAction(id: string, newOrder: string) {
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("lists")
+    .update({ order: newOrder })
+    .eq("id", id);
+
+  if (error) throw new Error(error.message);
+}

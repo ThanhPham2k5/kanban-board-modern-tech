@@ -5,11 +5,17 @@ import {
   draggable,
   dropTargetForElements,
 } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import {
+  attachClosestEdge,
+  extractClosestEdge,
+  Edge,
+} from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
+import { DropIndicator } from "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator/box";
 import { Button } from "./ui/button";
 import { Plus, Trash2 } from "lucide-react";
 
 interface ListProps {
-  list: { id: string; title: string };
+  list: { id: string; title: string; order: string };
   onUpdateTitle: (id: string, newTitle: string) => void;
   onDelete: (id: string) => void;
 }
@@ -25,6 +31,8 @@ export default function ListContainer({
   const [isDraggedOver, setIsDraggedOver] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
+  const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
+
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(list.title);
 
@@ -35,10 +43,16 @@ export default function ListContainer({
 
     const cleanupDrop = dropTargetForElements({
       element: li,
-      getData: () => ({ id: list.id, type: "list" }),
-      onDragEnter: () => setIsDraggedOver(true),
-      onDragLeave: () => setIsDraggedOver(false),
-      onDrop: () => setIsDraggedOver(false),
+      getData: ({ input, element }) => {
+        return attachClosestEdge(
+          { id: list.id, type: "list" },
+          { input, element, allowedEdges: ["left", "right"] },
+        );
+      },
+      onDragEnter: (args) => setClosestEdge(extractClosestEdge(args.self.data)),
+      onDrag: (args) => setClosestEdge(extractClosestEdge(args.self.data)),
+      onDragLeave: () => setClosestEdge(null),
+      onDrop: () => setClosestEdge(null),
     });
 
     const cleanupDrag = draggable({
@@ -65,8 +79,10 @@ export default function ListContainer({
   return (
     <div
       ref={listRef}
-      className={`shrink-0 w-80 max-h-full flex flex-col bg-muted/50 rounded-xl border transition-all ${isDraggedOver ? "bg-muted ring-2 ring-primary/50 translate-x-1" : ""} ${isDragging ? "opacity-40 shadow-xl scale-[0.98]" : "opacity-100 shadow-sm"}`}
+      className={`relative shrink-0 w-80 max-h-full flex flex-col bg-muted/50 rounded-xl border transition-all ${isDraggedOver ? "bg-muted ring-2 ring-primary/50 translate-x-1" : ""} ${isDragging ? "opacity-40 shadow-xl scale-[0.98]" : "opacity-100 shadow-sm"}`}
     >
+      {closestEdge && <DropIndicator edge={closestEdge} gap="16px" />}
+
       <div
         ref={dragHandleRef}
         className="p-3 pb-2 flex justify-between items-center cursor-grab active:cursor-grabbing group"

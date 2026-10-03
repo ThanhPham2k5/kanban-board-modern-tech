@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
+import { generateKeyBetween } from "fractional-indexing";
 import ListContainer from "./ListContainer";
 import { Button } from "./ui/button";
 import { Plus } from "lucide-react";
@@ -9,10 +11,20 @@ import {
   addListAction,
   updateListAction,
   deleteListAction,
+  updateListOrderAction,
 } from "@/actions/list-actions";
 
 export default function BoardView({ initialLists }: { initialLists: any[] }) {
-  const [lists, setLists] = useState(initialLists);
+  const [lists, setLists] = useState(() =>
+    [...initialLists].sort((a, b) =>
+      a.order < b.order ? -1 : a.order > b.order ? 1 : 0,
+    ),
+  );
+
+  const listRef = useRef(lists);
+  useEffect(() => {
+    listRef.current = lists;
+  }, [lists]);
 
   // re-sync state if database changed - multiple screens case
   useEffect(() => {
@@ -21,12 +33,16 @@ export default function BoardView({ initialLists }: { initialLists: any[] }) {
 
   // list CRUD functions
   const addList = async () => {
+    // auto add the end of lists
+    const lastList = lists[lists.length - 1];
+    const newOrder = generateKeyBetween(lastList?.order || null, null);
+
     const tempId = `list-${Date.now()}`;
 
     const newList = {
       id: tempId, // random list id for optismic UI
       title: "Danh sách mới",
-      order: lists.length + 1,
+      order: newOrder,
     };
     setLists([...lists, newList]);
 
@@ -72,21 +88,45 @@ export default function BoardView({ initialLists }: { initialLists: any[] }) {
 
         // list verify
         if (source.data.type === "list" && destination.data.type === "list") {
-          const draggedId = source.data.id;
-          const targetId = destination.data.id;
+          const draggedId = source.data.id as string;
+          const targetId = destination.data.id as string;
 
           if (draggedId === targetId) return; // drag and drop at one place
 
-          setLists((prevList) => {
-            const draggedIndex = prevList.findIndex((l) => l.id === draggedId);
-            const targetIndex = prevList.findIndex((l) => l.id === targetId);
+          const edge = extractClosestEdge(destination.data);
 
-            const newLists = [...prevList];
-            const [draggedItem] = newLists.splice(draggedIndex, 1);
+          const prevLists = listRef.current;
 
-            newLists.splice(targetIndex, 0, draggedItem);
-            return newLists;
-          });
+          const targetIndex = prevLists.findIndex((l) => l.id === targetId);
+          const draggedItem = prevLists.find((l) => l.id === draggedId)!;
+
+          let prevOrder = null;
+          let nextOrder = null;
+
+          if (edge === "left") {
+            prevOrder = prevLists[targetIndex - 1]?.order || null;
+            nextOrder = prevLists[targetIndex].order;
+          } else if (edge === "right") {
+            prevOrder = prevLists[targetIndex].order;
+            nextOrder = prevLists[targetIndex + 1]?.order || null;
+          }
+
+          if (
+            prevOrder === draggedItem.order ||
+            nextOrder === draggedItem.order
+          ) {
+            return prevLists;
+          }
+
+          const newOrderString = generateKeyBetween(prevOrder, nextOrder);
+          const updateLists = prevLists.map((l) =>
+            l.id === draggedId ? { ...l, order: newOrderString } : l,
+          );
+          const sortedLists = updateLists.sort((a, b) =>
+            a.order < b.order ? -1 : a.order > b.order ? 1 : 0,
+          );
+          setLists(sortedLists);
+          updateListOrderAction(draggedId, newOrderString).catch(console.error);
         }
       },
     });
