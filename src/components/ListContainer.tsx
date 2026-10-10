@@ -1,7 +1,6 @@
 "use client";
 
 import CardItem from "./CardItem";
-
 import { useEffect, useRef, useState } from "react";
 import {
   draggable,
@@ -14,33 +13,39 @@ import {
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { DropIndicator } from "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator/box";
 import { Button } from "@/components/ui/button"; 
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, X } from "lucide-react";
 
 interface ListProps {
   list: { id: string; title: string; order: string };
- cards?: { id: string; title: string; list_id: string; order: string; isCompleted?: boolean }[]; // Thêm prop cards
+  cards?: { id: string; title: string; list_id: string; order: string; isCompleted?: boolean }[]; 
   onUpdateTitle: (id: string, newTitle: string) => void;
   onDelete: (id: string) => void;
   onOpenCard: (card: { id: string; title: string; list_id: string; order: string; isCompleted?: boolean }) => void;
+  // Thêm prop này để báo cho BoardView biết có thẻ mới
+  onAddCard?: (listId: string, title: string) => void; 
+  onToggleComplete: (id: string, isCompleted: boolean) => void;
 }
 
 export default function ListContainer({
   list,
-  cards = [], // Nhận prop cards với giá trị mặc định
+  cards = [], 
   onUpdateTitle,
   onDelete,
-  onOpenCard , 
+  onOpenCard, 
+  onAddCard,
+  onToggleComplete,
 }: ListProps) {
   const listRef = useRef<HTMLDivElement>(null);
-  const dragHandleRef = useRef<HTMLDivElement>(null); // the handle which is used to drag a list
+  const dragHandleRef = useRef<HTMLDivElement>(null);
 
-//  const [isDraggedOver, setIsDraggedOver] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-
   const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
-
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(list.title);
+
+  // Thêm state để quản lý form tạo thẻ mới
+  const [isAddingCard, setIsAddingCard] = useState(false);
+  const [newCardTitle, setNewCardTitle] = useState("");
 
   useEffect(() => {
     const li = listRef.current;
@@ -63,7 +68,7 @@ export default function ListContainer({
 
     const cleanupDrag = draggable({
       element: li,
-      dragHandle: handle, // only drag when user uses the handle
+      dragHandle: handle, 
       getInitialData: () => ({ id: list.id, type: "list" }),
       onDragStart: () => setIsDragging(true),
       onDrop: () => setIsDragging(false),
@@ -82,8 +87,17 @@ export default function ListContainer({
     }
   };
 
+  // Hàm xử lý lưu thẻ mới
+  const handleAddCardSubmit = () => {
+    if (newCardTitle.trim() && onAddCard) {
+      onAddCard(list.id, newCardTitle.trim());
+      setNewCardTitle(""); // Xóa rỗng input
+      setIsAddingCard(false); // Đóng form
+    }
+  };
+
   return (
-  <div
+    <div
       ref={listRef}
       className={`relative shrink-0 w-80 max-h-full flex flex-col bg-muted/50 rounded-xl border transition-all ${isDragging ? "opacity-40 shadow-xl scale-[0.98]" : "opacity-100 shadow-sm"}`}
     >
@@ -125,21 +139,52 @@ export default function ListContainer({
         </Button>
       </div>
 
-      {/* Đã sửa: Render CardItem tại đây */}
       <div className="flex-1 overflow-y-auto px-3 py-1 flex flex-col gap-2 min-h-[10px]">
         {cards.map((card) => (
-          <CardItem key={card.id} card={card} onOpenCard={onOpenCard} />
+          <CardItem 
+            key={card.id} 
+            card={card} 
+            onOpenCard={onOpenCard} 
+            onToggleComplete={onToggleComplete} 
+          />
         ))}
       </div>
 
+      {/* Khu vực thêm thẻ đã được cải tiến */}
       <div className="p-2 pt-1">
-        <Button
-          variant="ghost"
-          className="w-full justify-start text-muted-foreground hover:text-foreground cursor-pointer"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Thêm thẻ
-        </Button>
+        {isAddingCard ? (
+          <div className="flex flex-col gap-2 bg-background p-2 rounded-md border shadow-sm">
+            <textarea
+              autoFocus
+              value={newCardTitle}
+              onChange={(e) => setNewCardTitle(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleAddCardSubmit();
+                }
+              }}
+              placeholder="Nhập tiêu đề thẻ..."
+              className="w-full text-sm resize-none outline-none bg-transparent"
+              rows={2}
+            />
+            <div className="flex items-center gap-1">
+              <Button size="sm" onClick={handleAddCardSubmit}>Thêm</Button>
+              <Button size="icon" variant="ghost" onClick={() => setIsAddingCard(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <Button
+            variant="ghost"
+            onClick={() => setIsAddingCard(true)}
+            className="w-full justify-start text-muted-foreground hover:text-foreground cursor-pointer"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Thêm thẻ
+          </Button>
+        )}
       </div>
     </div>
   );

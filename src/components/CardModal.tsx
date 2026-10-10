@@ -2,6 +2,7 @@
 
 import { X, AlignLeft, CheckCircle2, Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
+import { useState, useEffect } from "react";
 
 interface CardModalProps {
   card: { 
@@ -12,12 +13,13 @@ interface CardModalProps {
     isCompleted?: boolean;
     description?: string;
   } | null;
-  listTitle?: string; // Thêm prop để nhận tên danh sách
+  listTitle?: string;
   isOpen: boolean;
   onClose: () => void;
   onToggleComplete: (id: string, isCompleted: boolean) => void;
   onDeleteCard: (id: string) => void;
   onUpdateDescription: (id: string, newDesc: string) => void;
+  onUpdateTitle: (id: string, newTitle: string) => void; // Thêm prop này
 }
 
 export default function CardModal({ 
@@ -27,9 +29,30 @@ export default function CardModal({
   onClose,
   onToggleComplete,
   onDeleteCard,
-  onUpdateDescription
+  onUpdateDescription,
+  onUpdateTitle
 }: CardModalProps) {
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+
+// Cập nhật lại state khi mở modal thẻ khác
+useEffect(() => {
+  if (card) {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setEditTitle(card.title);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsEditingTitle(false);
+  }
+}, [card]);
+
   if (!isOpen || !card) return null;
+
+  const handleTitleSubmit = () => {
+    if (editTitle.trim() && editTitle !== card.title) {
+      onUpdateTitle(card.id, editTitle.trim());
+    }
+    setIsEditingTitle(false);
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -40,10 +63,30 @@ export default function CardModal({
           <X className="h-5 w-5" />
         </button>
 
-        {/* Tiêu đề thẻ */}
+        {/* Tiêu đề thẻ (Có thể click để sửa) */}
         <div className="mb-6 pr-8">
-          <h2 className="text-xl font-bold">{card.title}</h2>
-          <p className="text-sm text-muted-foreground mt-1">
+          {isEditingTitle ? (
+            <input
+              autoFocus
+              className="text-xl font-bold w-full bg-transparent border-b-2 border-primary outline-none px-1"
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              onBlur={handleTitleSubmit}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleTitleSubmit();
+              }}
+            />
+          ) : (
+            <h2 
+              className="text-xl font-bold cursor-text hover:bg-muted/30 p-1 -ml-1 rounded transition-colors"
+              onClick={() => setIsEditingTitle(true)}
+              title="Nhấn để sửa tiêu đề"
+            >
+              {card.title}
+            </h2>
+          )}
+          
+          <p className="text-sm text-muted-foreground mt-1 px-1">
             Nằm trong danh sách <span className="font-semibold underline">{listTitle}</span>
           </p>
         </div>
@@ -57,9 +100,8 @@ export default function CardModal({
             </div>
             <textarea
               className="w-full min-h-[120px] p-3 text-sm rounded-md border bg-muted/30 focus:bg-background outline-none focus:ring-2 focus:ring-primary/50"
-              placeholder="Thêm mô tả chi tiết... (Gõ xong nhấn chuột ra ngoài để lưu)"
+              placeholder="Thêm mô tả chi tiết..."
               defaultValue={card.description || ""}
-              // Sự kiện onBlur: Lưu mô tả khi người dùng click chuột ra ngoài ô nhập
               onBlur={(e) => onUpdateDescription(card.id, e.target.value)}
             />
           </div>
@@ -74,10 +116,10 @@ export default function CardModal({
               className="w-full justify-start"
               onClick={() => {
                 onToggleComplete(card.id, !!card.isCompleted);
-                onClose(); // Bấm xong thì đóng modal hoặc bỏ dòng này nếu muốn giữ modal mở
+                // Đã gỡ onClose() để người dùng thấy trạng thái thay đổi tức thời
               }}
             >
-              <CheckCircle2 className={`h-4 w-4 mr-2 ${card.isCompleted ? "text-green-600" : ""}`} />
+              <CheckCircle2 className={`h-4 w-4 mr-2 transition-colors ${card.isCompleted ? "text-green-600" : ""}`} />
               {card.isCompleted ? "Bỏ hoàn thành" : "Đánh dấu hoàn thành"}
             </Button>
             
@@ -87,7 +129,7 @@ export default function CardModal({
               className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
               onClick={() => {
                 onDeleteCard(card.id);
-                onClose(); // Xóa xong phải đóng modal
+                // Xóa xong thì bắt buộc phải đóng modal
               }}
             >
               <Trash2 className="h-4 w-4 mr-2" />

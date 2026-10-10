@@ -14,10 +14,18 @@ import {
   deleteListAction,
   updateListOrderAction,
 } from "@/actions/list-actions";
+import { 
+  addCardAction, 
+  updateCardTitleAction, 
+  updateCardDescriptionAction, 
+  toggleCardCompleteAction, 
+  deleteCardAction, 
+  updateCardOrderAction 
+} from "@/actions/card-actions";
 
 interface BoardViewProps {
   initialLists: { id: string; title: string; order: string }[];
-  initialCards: { id: string; title: string; list_id: string; order: string; isCompleted?: boolean }[];
+  initialCards: { id: string; title: string; list_id: string; order: string; isCompleted?: boolean, description?: string }[];
 }
 
 export default function BoardView({ initialLists, initialCards }: BoardViewProps) {
@@ -31,8 +39,7 @@ export default function BoardView({ initialLists, initialCards }: BoardViewProps
     [...initialCards].sort((a, b) => (a.order < b.order ? -1 : 1))
   );
 
-  // State quản lý việc đóng/mở Modal Card
-  const [selectedCard, setSelectedCard] = useState<{ id: string; title: string; list_id: string; order: string; isCompleted?: boolean } | null>(null);
+  const [selectedCard, setSelectedCard] = useState<{ id: string; title: string; list_id: string; order: string; isCompleted?: boolean, description?: string } | null>(null);
 
   const listRef = useRef(lists);
   const cardsRef = useRef(cards);
@@ -45,10 +52,9 @@ export default function BoardView({ initialLists, initialCards }: BoardViewProps
     cardsRef.current = cards;
   }, [cards]);
 
-useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => {
+     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLists(initialLists);
-    
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setCards(initialCards);
   }, [initialLists, initialCards]);
@@ -64,7 +70,7 @@ useEffect(() => {
       title: "Danh sách mới",
       order: newOrder,
     };
-    setLists([...lists, newList]);
+    setLists([...lists, newList]);  
 
     try {
       const savedList = await addListAction(
@@ -98,21 +104,57 @@ useEffect(() => {
     }
   };
 
-  const toggleCardComplete = (id: string, currentStatus: boolean) => {
-    setCards(cards.map(c => c.id === id ? { ...c, isCompleted: !currentStatus } : c));
-    // TODO: Báo bạn Backend viết hàm gọi API Supabase cập nhật isCompleted
-  };
+  const handleAddCard = async (listId: string, title: string) => {
+    const cardsInList = cardsRef.current.filter(c => c.list_id === listId).sort((a, b) => a.order < b.order ? -1 : 1);
+    const lastCard = cardsInList[cardsInList.length - 1];
+    const newOrder = generateKeyBetween(lastCard ? lastCard.order : null, null);
 
-  const deleteCard = (id: string) => {
-    if (confirm("Bạn có chắc muốn xoá thẻ này?")) {
-      setCards(cards.filter(c => c.id !== id));
-      // TODO: Báo bạn Backend viết hàm gọi API Supabase xóa thẻ
+    const tempId = crypto.randomUUID();
+    const tempCard = {
+      id: tempId,
+      title: title,
+      list_id: listId,
+      order: newOrder,
+      isCompleted: false,
+      description: ""
+    };
+    
+    setCards((prev) => [...prev, tempCard]);
+
+    try {
+      const savedCard = await addCardAction(listId, title, newOrder);
+      setCards((prev) => prev.map(c => c.id === tempId ? { ...c, id: savedCard.id } : c));
+    } catch (error) {
+      setCards((prev) => prev.filter(c => c.id !== tempId));
+      console.error("Lỗi khi thêm card:", error);
     }
   };
 
-  const updateCardDescription = (id: string, newDesc: string) => {
+  const updateCardTitle = async (id: string, newTitle: string) => {
+    setCards(cards.map(c => c.id === id ? { ...c, title: newTitle } : c));
+    if (selectedCard?.id === id) setSelectedCard(prev => prev ? { ...prev, title: newTitle } : null);
+    await updateCardTitleAction(id, newTitle).catch(console.error);
+  };
+
+  const toggleCardComplete = async (id: string, currentStatus: boolean) => {
+    const newStatus = !currentStatus;
+    setCards(cards.map(c => c.id === id ? { ...c, isCompleted: newStatus } : c));
+    if (selectedCard?.id === id) setSelectedCard(prev => prev ? { ...prev, isCompleted: newStatus } : null);
+    await toggleCardCompleteAction(id, newStatus).catch(console.error);
+  };
+
+  const deleteCard = async (id: string) => {
+    if (confirm("Bạn có chắc muốn xoá thẻ này?")) {
+      setCards(cards.filter(c => c.id !== id));
+      setSelectedCard(null); 
+      await deleteCardAction(id).catch(console.error);
+    }
+  };
+
+  const updateCardDescription = async (id: string, newDesc: string) => {
     setCards(cards.map(c => c.id === id ? { ...c, description: newDesc } : c));
-    // TODO: hàm gọi API Supabase cập nhật mô tả
+    if (selectedCard?.id === id) setSelectedCard(prev => prev ? { ...prev, description: newDesc } : null);
+    await updateCardDescriptionAction(id, newDesc).catch(console.error);
   };
 
   useEffect(() => {
@@ -121,7 +163,6 @@ useEffect(() => {
         const destination = location.current.dropTargets[0];
         if (!destination) return;
 
-        // 1. KÉO THẢ CỘT (LIST)
         if (source.data.type === "list" && destination.data.type === "list") {
           const draggedId = source.data.id as string;
           const targetId = destination.data.id as string;
@@ -151,7 +192,6 @@ useEffect(() => {
           updateListOrderAction(draggedId, newOrderString).catch(console.error);
         }
 
-        // 2. KÉO THẢ THẺ (CARD)
         if (source.data.type === "card") {
           const draggedCardId = source.data.id as string;
           let targetListId = source.data.listId as string;
@@ -190,13 +230,17 @@ useEffect(() => {
           }
 
           if (newOrder || targetListId !== source.data.listId) {
+            const draggedCard = cardsRef.current.find(c => c.id === draggedCardId);
+            const finalOrder = newOrder || draggedCard?.order || "a0"; 
+
             setCards((prev) => {
               const updated = prev.map((c) => 
-                c.id === draggedCardId ? { ...c, list_id: targetListId, order: newOrder || c.order } : c
+                c.id === draggedCardId ? { ...c, list_id: targetListId, order: finalOrder } : c
               );
               return updated.sort((a, b) => (a.order < b.order ? -1 : 1));
             });
-            // TODO: Nhớ viết thêm action gọi Supabase cập nhật vị trí Card nhé
+
+            updateCardOrderAction(draggedCardId, targetListId, finalOrder).catch(console.error);
           }
         }
       },
@@ -216,6 +260,8 @@ useEffect(() => {
             onUpdateTitle={updateList}
             onDelete={deleteList}
             onOpenCard={(card) => setSelectedCard(card)} 
+            onAddCard={handleAddCard} 
+            onToggleComplete={toggleCardComplete}
           />
         ))}
 
@@ -230,14 +276,15 @@ useEffect(() => {
       </div>
 
      <CardModal 
-        card={selectedCard} 
-        listTitle={lists.find(l => l.id === selectedCard?.list_id)?.title}
-        isOpen={!!selectedCard} 
-        onClose={() => setSelectedCard(null)} 
-        onToggleComplete={toggleCardComplete}
-        onDeleteCard={deleteCard}
-        onUpdateDescription={updateCardDescription}
-      />
+      card={selectedCard} 
+      listTitle={lists.find(l => l.id === selectedCard?.list_id)?.title}
+      isOpen={!!selectedCard} 
+      onClose={() => setSelectedCard(null)} 
+      onToggleComplete={toggleCardComplete}
+      onDeleteCard={deleteCard}
+      onUpdateDescription={updateCardDescription}
+      onUpdateTitle={updateCardTitle} 
+    />
     </>
   );
 }

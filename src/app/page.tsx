@@ -5,7 +5,6 @@ import { createClient } from "@/lib/server";
 export default async function Home() {
   const supabase = await createClient();
 
-  // rename data to lists - identify with other data
   const { data: lists } = await supabase
     .from("lists")
     .select("*")
