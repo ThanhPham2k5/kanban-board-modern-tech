@@ -1,11 +1,14 @@
 "use server";
 
-import { createClient } from "@/lib/server";
+import { supabase } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
 
 // 1. THÊM CARD
-export async function addCardAction(listId: string, title: string, newOrder: string) {
-  const supabase = await createClient();
+export async function addCardAction(
+  listId: string,
+  title: string,
+  newOrder: string,
+) {
   const { data, error } = await supabase
     .from("cards")
     .insert({
@@ -25,7 +28,6 @@ export async function addCardAction(listId: string, title: string, newOrder: str
 
 // 2. SỬA TÊN CARD
 export async function updateCardTitleAction(id: string, newTitle: string) {
-  const supabase = await createClient();
   const { error } = await supabase
     .from("cards")
     .update({ title: newTitle })
@@ -36,8 +38,10 @@ export async function updateCardTitleAction(id: string, newTitle: string) {
 }
 
 // 3. SỬA MÔ TẢ
-export async function updateCardDescriptionAction(id: string, newDescription: string) {
-  const supabase = await createClient();
+export async function updateCardDescriptionAction(
+  id: string,
+  newDescription: string,
+) {
   const { error } = await supabase
     .from("cards")
     .update({ description: newDescription })
@@ -48,8 +52,10 @@ export async function updateCardDescriptionAction(id: string, newDescription: st
 }
 
 // 4. ĐÁNH DẤU HOÀN THÀNH
-export async function toggleCardCompleteAction(id: string, isCompleted: boolean) {
-  const supabase = await createClient();
+export async function toggleCardCompleteAction(
+  id: string,
+  isCompleted: boolean,
+) {
   const { error } = await supabase
     .from("cards")
     .update({ is_completed: isCompleted })
@@ -61,24 +67,23 @@ export async function toggleCardCompleteAction(id: string, isCompleted: boolean)
 
 // 5. XÓA THẺ
 export async function deleteCardAction(id: string) {
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from("cards")
-    .delete()
-    .eq("id", id);
+  const { error } = await supabase.from("cards").delete().eq("id", id);
 
   if (error) throw new Error(error.message);
   revalidatePath("/");
 }
 
 // 6. CẬP NHẬT KÉO THẢ (Đổi cột hoặc đổi thứ tự)
-export async function updateCardOrderAction(id: string, newListId: string, newOrder: string) {
-  const supabase = await createClient();
+export async function updateCardOrderAction(
+  id: string,
+  newListId: string,
+  newOrder: string,
+) {
   const { error } = await supabase
     .from("cards")
-    .update({ 
-      list_id: newListId, 
-      order: newOrder 
+    .update({
+      list_id: newListId,
+      order: newOrder,
     })
     .eq("id", id);
 

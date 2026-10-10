@@ -3,6 +3,7 @@
 import { X, AlignLeft, CheckCircle2, Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useState, useEffect } from "react";
+import { ChecklistSection } from "./checklist/checklist-section";
 
 interface CardModalProps {
   card: {
@@ -107,6 +108,8 @@ export default function CardModal({
               defaultValue={card.description || ""}
               onBlur={(e) => onUpdateDescription(card.id, e.target.value)}
             />
+
+            <div>aaaaaaaa</div>
           </div>
 
           {/* Cột phải: Các nút hành động */}
