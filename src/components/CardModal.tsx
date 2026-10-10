@@ -104,6 +104,12 @@ useEffect(() => {
               defaultValue={card.description || ""}
               onBlur={(e) => onUpdateDescription(card.id, e.target.value)}
             />
+
+          {/* DIV CHECKLIST */}
+            <div id={`checklist-placeholder-${card.id}`} className="mt-2">
+            
+
+            </div>
           </div>
 
           {/* Cột phải: Các nút hành động */}

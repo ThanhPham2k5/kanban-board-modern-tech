@@ -9,12 +9,11 @@ import { Card as UiCard, CardContent as UiCardContent } from "@/components/ui/ca
 
 interface CardProps {
   card: { id: string; title: string; list_id: string; order: string; is_completed?: boolean };
-  // Sửa thành onToggleComplete (bỏ chữ d) để khớp với BoardView
+  
   onToggleComplete?: (id: string, status: boolean) => void; 
   onOpenCard: (card: { id: string; title: string; list_id: string; order: string; is_completed?: boolean }) => void;
 }
 
-// Sửa thành onToggleComplete (bỏ chữ d)
 export default function CardItem({ card, onToggleComplete, onOpenCard }: CardProps) { 
   const cardRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -78,8 +77,7 @@ export default function CardItem({ card, onToggleComplete, onOpenCard }: CardPro
               {card.title}
             </p>
 
-            {/* DIV CHECKLIST */}
-            <div id={`checklist-placeholder-${card.id}`} className="mt-2"></div>
+            
           </div>
         </UiCardContent>
       </UiCard>
