@@ -32,9 +32,11 @@ export function ChecklistSection({
 }: ChecklistSectionProps) {
   const [isAddingGroup, setIsAddingGroup] = useState(false);
   const [newTitle, setNewTitle] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const checklistsRef = useRef(checklists);
+  useEffect(() => {
+    checklistsRef.current = checklists;
+  }, [checklists]);
 
   useEffect(() => {
     return monitorForElements({
@@ -203,34 +205,57 @@ export function ChecklistSection({
   async function handleCreateGroup(e: React.FormEvent) {
     e.preventDefault();
     const title = newTitle.trim();
-    if (!title || isSubmitting) return;
+    if (!title) return;
 
-    setIsSubmitting(true);
+    const previousChecklists = [...checklists];
+    const lastChecklist = checklists[checklists.length - 1];
+    const nextOrder = generateKeyBetween(
+      lastChecklist ? lastChecklist.order : null,
+      null,
+    );
+    const tempId = `temp-${Date.now()}`;
+    const newChecklist: ChecklistWithItems = {
+      id: tempId,
+      card_id: cardId,
+      title,
+      order: nextOrder,
+      items: [],
+    };
+
+    const updatedChecklists = [...checklists, newChecklist];
+    onChange(updatedChecklists);
+    setNewTitle("");
+    setIsAddingGroup(false);
+
     try {
-      const lastChecklist = checklists[checklists.length - 1];
-      const nextOrder = generateKeyBetween(
-        lastChecklist ? lastChecklist.order : null,
-        null,
-      );
-
       const created = await createChecklist({
         card_id: cardId,
         title,
         order: nextOrder,
       });
 
-      onChange([...checklists, { ...created, items: [] }]);
-      setNewTitle("");
-      setIsAddingGroup(false);
-    } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Thêm nhóm thất bại");
-    } finally {
-      setIsSubmitting(false);
+      const finalChecklists = updatedChecklists.map((item) =>
+        item.id === tempId ? { ...created, items: item.items } : item,
+      );
+      onChange(finalChecklists);
+    } catch {
+      console.error("Thêm mới checklist thất bại");
+      onChange(previousChecklists);
+      setNewTitle(title);
+      setIsAddingGroup(true);
     }
   }
 
   function handleChecklistDeleted(deletedId: string) {
     onChange(checklists.filter((item) => item.id !== deletedId));
+  }
+
+  function handleChecklistDeleteFailed(restoredChecklist: ChecklistWithItems) {
+    const restoredChecklists = [...checklists, restoredChecklist].sort((a, b) =>
+      (a.order ?? "").localeCompare(b.order ?? ""),
+    );
+
+    onChange(restoredChecklists);
   }
 
   function handleChecklistUpdated(updatedChecklist: ChecklistWithItems) {
@@ -251,11 +276,8 @@ export function ChecklistSection({
               placeholder="Nhập tên checklist (VD: Thiết kế UI, Review Code...)"
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
-              disabled={isSubmitting}
             />
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Đang tạo..." : "Lưu"}
-            </Button>
+            <Button type="submit"> Thêm checklist </Button>
             <Button
               type="button"
               variant="ghost"
@@ -291,6 +313,7 @@ export function ChecklistSection({
               checklist={cl}
               onChecklistDeleted={handleChecklistDeleted}
               onChecklistUpdated={handleChecklistUpdated}
+              onChecklistDeleteFailed={handleChecklistDeleteFailed}
             />
           ))}
         </div>

@@ -31,19 +31,20 @@ interface ChecklistCardProps {
   checklist: ChecklistWithItems;
   onChecklistDeleted: (checklistId: string) => void;
   onChecklistUpdated: (updatedChecklist: ChecklistWithItems) => void;
+  onChecklistDeleteFailed: (restoredChecklist: ChecklistWithItems) => void;
 }
 
 export function ChecklistCard({
   checklist,
   onChecklistDeleted,
   onChecklistUpdated,
+  onChecklistDeleteFailed,
 }: ChecklistCardProps) {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleValue, setTitleValue] = useState(checklist.title);
 
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [newItemText, setNewItemText] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const items = checklist.items || [];
   const total = items.length;
@@ -82,7 +83,6 @@ export function ChecklistCard({
               "0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1)";
             preview.style.opacity = "0.95";
             preview.style.pointerEvents = "none";
-
             container.appendChild(preview);
           },
           nativeSetDragImage,
@@ -156,9 +156,9 @@ export function ChecklistCard({
     try {
       await updateChecklist(checklist.id, trimmed);
     } catch {
+      console.error("Cập nhật tiêu đề thất bại");
       setTitleValue(checklist.title);
       onChecklistUpdated({ ...checklist, title: checklist.title });
-      console.error("Cập nhật tiêu đề thất bại");
     }
   }
 
@@ -183,19 +183,43 @@ export function ChecklistCard({
     onChecklistUpdated({ ...checklist, items: nextItems });
   }
 
+  function handleItemDeleteFailed(restoredItem: ChecklistItem) {
+    const restoredItems = [...items, restoredItem].sort((a, b) =>
+      (a.order ?? "").localeCompare(b.order ?? ""),
+    );
+
+    onChecklistUpdated({ ...checklist, items: restoredItems });
+  }
+
   async function handleAddItem(e: React.FormEvent) {
     e.preventDefault();
     const content = newItemText.trim();
-    if (!content || isSubmitting) return;
+    if (!content) return;
 
-    setIsSubmitting(true);
+    const previousItems = [...items];
+    const lastItem = items[items.length - 1];
+    const nextOrder = generateKeyBetween(
+      lastItem ? lastItem.order : null,
+      null,
+    );
+    const tempId = `temp-item-${Date.now()}`;
+    const newItem: ChecklistItem = {
+      id: tempId,
+      checklist_id: checklist.id,
+      content,
+      is_checked: false,
+      order: nextOrder,
+    };
+
+    const updatedItems = [...items, newItem];
+    onChecklistUpdated({
+      ...checklist,
+      items: updatedItems,
+    });
+    setNewItemText("");
+    setIsAddingItem(false);
+
     try {
-      const lastItem = items[items.length - 1];
-      const nextOrder = generateKeyBetween(
-        lastItem ? lastItem.order : null,
-        null,
-      );
-
       const created = await createChecklistItem({
         checklist_id: checklist.id,
         content,
@@ -203,26 +227,32 @@ export function ChecklistCard({
         order: nextOrder,
       });
 
+      const finalItems = updatedItems.map((item) =>
+        item.id === tempId ? created : item,
+      );
       onChecklistUpdated({
         ...checklist,
-        items: [...items, created],
+        items: finalItems,
       });
-
-      setNewItemText("");
-      setIsAddingItem(false);
-    } catch (err: unknown) {
-      console.error(err);
-    } finally {
-      setIsSubmitting(false);
+    } catch {
+      console.error("Thêm mới checklist item thất bại");
+      onChecklistUpdated({
+        ...checklist,
+        items: previousItems,
+      });
+      setNewItemText(content);
+      setIsAddingItem(true);
     }
   }
 
   async function handleDeleteChecklist() {
+    const checklistToRestore = checklist;
     onChecklistDeleted(checklist.id);
     try {
       await deleteChecklist(checklist.id);
     } catch {
       console.error("Xóa checklist thất bại");
+      onChecklistDeleteFailed(checklistToRestore);
     }
   }
 
@@ -296,6 +326,7 @@ export function ChecklistCard({
             item={item}
             onItemUpdated={handleItemUpdated}
             onItemDeleted={handleItemDeleted}
+            onItemDeleteFailed={handleItemDeleteFailed}
           />
         ))}
       </div>
@@ -307,11 +338,10 @@ export function ChecklistCard({
             placeholder="Thêm một mục công việc..."
             value={newItemText}
             onChange={(e) => setNewItemText(e.target.value)}
-            disabled={isSubmitting}
           />
           <div className="flex items-center gap-2">
-            <Button type="submit" size="sm" disabled={isSubmitting}>
-              {isSubmitting ? "Đang thêm..." : "Thêm"}
+            <Button type="submit" size="sm">
+              Thêm item
             </Button>
             <Button
               type="button"

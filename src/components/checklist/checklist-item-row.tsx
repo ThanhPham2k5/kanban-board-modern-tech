@@ -22,14 +22,15 @@ interface ChecklistItemRowProps {
   item: ChecklistItem;
   onItemUpdated: (updatedItem: ChecklistItem) => void;
   onItemDeleted: (itemId: string) => void;
+  onItemDeleteFailed: (restoredItem: ChecklistItem) => void;
 }
 
 export function ChecklistItemRow({
   item,
   onItemUpdated,
   onItemDeleted,
+  onItemDeleteFailed,
 }: ChecklistItemRowProps) {
-  const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [contentValue, setContentValue] = useState(item.content);
 
@@ -57,7 +58,6 @@ export function ChecklistItemRow({
           render({ container }) {
             const preview = el.cloneNode(true) as HTMLElement;
             const rect = el.getBoundingClientRect();
-
             preview.style.width = `${rect.width}px`;
             preview.style.backgroundColor = "var(--background, #ffffff)";
             preview.style.border = "1px solid var(--border, #e2e8f0)";
@@ -66,7 +66,6 @@ export function ChecklistItemRow({
               "0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1)";
             preview.style.opacity = "0.95";
             preview.style.pointerEvents = "none";
-
             container.appendChild(preview);
           },
           nativeSetDragImage,
@@ -107,14 +106,12 @@ export function ChecklistItemRow({
   }, [item.checklist_id, item.id, item.order]);
 
   async function handleToggle(checked: boolean) {
-    const previousState = item.is_checked;
     onItemUpdated({ ...item, is_checked: checked });
-
     try {
       await updateChecklistItem(item.id, { is_checked: checked });
     } catch {
-      onItemUpdated({ ...item, is_checked: previousState });
       console.error("Cập nhật checkbox thất bại");
+      onItemUpdated({ ...item, is_checked: item.is_checked });
     }
   }
 
@@ -127,15 +124,14 @@ export function ChecklistItemRow({
       return;
     }
 
-    const previousContent = item.content;
     onItemUpdated({ ...item, content: trimmed });
 
     try {
       await updateChecklistItem(item.id, { content: trimmed });
     } catch {
-      setContentValue(previousContent);
-      onItemUpdated({ ...item, content: previousContent });
-      console.error("Cập nhật nội dung việc thất bại");
+      console.error("Cập nhật nội dung checklist item thất bại");
+      setContentValue(item.content);
+      onItemUpdated({ ...item, content: item.content });
     }
   }
 
@@ -149,13 +145,13 @@ export function ChecklistItemRow({
   }
 
   async function handleDelete() {
-    setIsDeleting(true);
+    const itemToRestore = item;
     onItemDeleted(item.id);
-
     try {
       await deleteChecklistItem(item.id);
     } catch {
-      console.error("Xóa mục thất bại");
+      console.error("Xóa checklist item thất bại");
+      onItemDeleteFailed(itemToRestore);
     }
   }
 
@@ -218,7 +214,6 @@ export function ChecklistItemRow({
       <Button
         variant="ghost"
         size="icon"
-        disabled={isDeleting}
         className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive hover:bg-transparent shrink-0"
         onClick={handleDelete}
       >
