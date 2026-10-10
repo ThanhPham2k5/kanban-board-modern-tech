@@ -7,8 +7,8 @@ import {
   CreateChecklistItemInput,
   ListWithCards,
   UpdateChecklistItemInput,
-} from "./definitions";
-import { supabase } from "./supabase";
+} from "@/lib/definitions";
+import { supabase } from "@/lib/supabase";
 
 export async function getFullData(): Promise<ListWithCards[]> {
   const { data, error } = await supabase

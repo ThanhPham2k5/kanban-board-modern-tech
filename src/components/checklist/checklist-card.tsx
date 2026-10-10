@@ -4,7 +4,7 @@ import {
   createChecklistItem,
   deleteChecklist,
   updateChecklist,
-} from "@/app/lib/actions";
+} from "@/actions/checklist-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
@@ -21,10 +21,7 @@ import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/el
 import { generateKeyBetween } from "fractional-indexing";
 import { GripVertical, Plus, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import {
-  ChecklistItem,
-  ChecklistWithItems,
-} from "../../../src/app/lib/definitions";
+import { ChecklistItem, ChecklistWithItems } from "../../lib/definitions";
 import { ChecklistItemRow } from "./checklist-item-row";
 
 interface ChecklistCardProps {

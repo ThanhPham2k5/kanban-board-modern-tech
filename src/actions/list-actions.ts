@@ -1,11 +1,9 @@
 "use server";
 
-import { createClient } from "@/lib/server";
+import { supabase } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
 
 export async function addListAction(title: string, order: string) {
-  const supabase = await createClient();
-
   const { data, error } = await supabase
     .from("lists")
     .insert([{ title, order }])
@@ -18,8 +16,6 @@ export async function addListAction(title: string, order: string) {
 }
 
 export async function updateListAction(id: string, newTitle: string) {
-  const supabase = await createClient();
-
   const { error } = await supabase
     .from("lists")
     .update({ title: newTitle })
@@ -30,8 +26,6 @@ export async function updateListAction(id: string, newTitle: string) {
 }
 
 export async function deleteListAction(id: string) {
-  const supabase = await createClient();
-
   const { error } = await supabase.from("lists").delete().eq("id", id);
   if (error) throw new Error(error.message);
 
@@ -39,8 +33,6 @@ export async function deleteListAction(id: string) {
 }
 
 export async function updateListOrderAction(id: string, newOrder: string) {
-  const supabase = await createClient();
-
   const { error } = await supabase
     .from("lists")
     .update({ order: newOrder })

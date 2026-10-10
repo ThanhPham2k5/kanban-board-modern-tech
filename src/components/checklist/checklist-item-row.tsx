@@ -1,6 +1,9 @@
 "use client";
 
-import { deleteChecklistItem, updateChecklistItem } from "@/app/lib/actions";
+import {
+  deleteChecklistItem,
+  updateChecklistItem,
+} from "@/actions/checklist-actions";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -16,7 +19,7 @@ import {
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 import { GripVertical, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { ChecklistItem } from "../../../src/app/lib/definitions";
+import { ChecklistItem } from "../../lib/definitions";
 
 interface ChecklistItemRowProps {
   item: ChecklistItem;

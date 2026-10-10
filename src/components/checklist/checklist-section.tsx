@@ -4,7 +4,7 @@ import {
   createChecklist,
   updateChecklistItemOrder,
   updateChecklistOrder,
-} from "@/app/lib/actions";
+} from "@/actions/checklist-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
@@ -13,10 +13,7 @@ import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/ad
 import { generateKeyBetween } from "fractional-indexing";
 import { Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import {
-  ChecklistItem,
-  ChecklistWithItems,
-} from "../../../src/app/lib/definitions";
+import { ChecklistItem, ChecklistWithItems } from "../../lib/definitions";
 import { ChecklistCard } from "./checklist-card";
 
 interface ChecklistSectionProps {
