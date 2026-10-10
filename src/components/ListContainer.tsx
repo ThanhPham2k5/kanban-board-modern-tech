@@ -1,5 +1,7 @@
 "use client";
 
+import CardItem from "./CardItem";
+
 import { useEffect, useRef, useState } from "react";
 import {
   draggable,
@@ -11,24 +13,40 @@ import {
   Edge,
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { DropIndicator } from "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator/box";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
 
 interface ListProps {
   list: { id: string; title: string; order: string };
+  cards?: {
+    id: string;
+    title: string;
+    list_id: string;
+    order: string;
+    isCompleted?: boolean;
+  }[]; // Thêm prop cards
   onUpdateTitle: (id: string, newTitle: string) => void;
   onDelete: (id: string) => void;
+  onOpenCard: (card: {
+    id: string;
+    title: string;
+    list_id: string;
+    order: string;
+    isCompleted?: boolean;
+  }) => void;
 }
 
 export default function ListContainer({
   list,
+  cards = [], // Nhận prop cards với giá trị mặc định
   onUpdateTitle,
   onDelete,
+  onOpenCard,
 }: ListProps) {
   const listRef = useRef<HTMLDivElement>(null);
   const dragHandleRef = useRef<HTMLDivElement>(null); // the handle which is used to drag a list
 
-  const [isDraggedOver, setIsDraggedOver] = useState(false);
+  //  const [isDraggedOver, setIsDraggedOver] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
   const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
@@ -79,7 +97,7 @@ export default function ListContainer({
   return (
     <div
       ref={listRef}
-      className={`relative shrink-0 w-80 max-h-full flex flex-col bg-muted/50 rounded-xl border transition-all ${isDraggedOver ? "bg-muted ring-2 ring-primary/50 translate-x-1" : ""} ${isDragging ? "opacity-40 shadow-xl scale-[0.98]" : "opacity-100 shadow-sm"}`}
+      className={`relative shrink-0 w-80 max-h-full flex flex-col bg-muted/50 rounded-xl border transition-all ${isDragging ? "opacity-40 shadow-xl scale-[0.98]" : "opacity-100 shadow-sm"}`}
     >
       {closestEdge && <DropIndicator edge={closestEdge} gap="16px" />}
 
@@ -119,8 +137,12 @@ export default function ListContainer({
         </Button>
       </div>
 
-      {/* place card component here */}
-      <div className="flex-1 overflow-y-auto px-3 py-1 flex flex-col gap-2 min-h-[10px]"></div>
+      {/* Đã sửa: Render CardItem tại đây */}
+      <div className="flex-1 overflow-y-auto px-3 py-1 flex flex-col gap-2 min-h-[10px]">
+        {cards.map((card) => (
+          <CardItem key={card.id} card={card} onOpenCard={onOpenCard} />
+        ))}
+      </div>
 
       <div className="p-2 pt-1">
         <Button

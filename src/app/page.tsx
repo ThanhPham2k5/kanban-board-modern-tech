@@ -11,11 +11,16 @@ export default async function Home() {
     .select("*")
     .order("order", { ascending: true });
 
+  const { data: cards } = await supabase
+    .from("cards")
+    .select("*")
+    .order("order", { ascending: true });
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
       <main className="flex-1 overflow-x-auto p-4 md:p-6">
-        <BoardView initialLists={lists || []} />
+        <BoardView initialLists={lists || []} initialCards={cards || []} />
       </main>
     </div>
   );
