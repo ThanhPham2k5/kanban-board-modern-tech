@@ -1,20 +1,46 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { attachClosestEdge, extractClosestEdge, Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
+import {
+  draggable,
+  dropTargetForElements,
+} from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import {
+  attachClosestEdge,
+  extractClosestEdge,
+  Edge,
+} from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { DropIndicator } from "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator/box";
 
 // Import đúng bộ Card từ hệ thống UI mới
-import { Card as UiCard, CardContent as UiCardContent } from "@/components/ui/card";
+import {
+  Card as UiCard,
+  CardContent as UiCardContent,
+} from "@/components/ui/card";
 
 interface CardProps {
-  card: { id: string; title: string; list_id: string; order: string; isCompleted?: boolean };
+  card: {
+    id: string;
+    title: string;
+    list_id: string;
+    order: string;
+    isCompleted?: boolean;
+  };
   onToggleCompleted?: (id: string, status: boolean) => void;
-  onOpenCard: (card: { id: string; title: string; list_id: string; order: string; isCompleted?: boolean }) => void;
+  onOpenCard: (card: {
+    id: string;
+    title: string;
+    list_id: string;
+    order: string;
+    isCompleted?: boolean;
+  }) => void;
 }
 
-export default function CardItem({ card, onToggleCompleted, onOpenCard }: CardProps) {
+export default function CardItem({
+  card,
+  onToggleCompleted,
+  onOpenCard,
+}: CardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
@@ -28,7 +54,7 @@ export default function CardItem({ card, onToggleCompleted, onOpenCard }: CardPr
       getData: ({ input, element }) => {
         return attachClosestEdge(
           { id: card.id, type: "card", listId: card.list_id },
-          { input, element, allowedEdges: ["top", "bottom"] }
+          { input, element, allowedEdges: ["top", "bottom"] },
         );
       },
       onDragEnter: (args) => setClosestEdge(extractClosestEdge(args.self.data)),
@@ -40,7 +66,11 @@ export default function CardItem({ card, onToggleCompleted, onOpenCard }: CardPr
     const cleanupDrag = draggable({
       element: el,
       // ĐÃ XÓA dragHandle: Toàn bộ element (el) giờ đây đều có thể dùng để kéo
-      getInitialData: () => ({ id: card.id, type: "card", listId: card.list_id }),
+      getInitialData: () => ({
+        id: card.id,
+        type: "card",
+        listId: card.list_id,
+      }),
       onDragStart: () => setIsDragging(true),
       onDrop: () => setIsDragging(false),
     });
@@ -54,14 +84,14 @@ export default function CardItem({ card, onToggleCompleted, onOpenCard }: CardPr
   return (
     <div ref={cardRef} className="relative">
       <UiCard
-        size="sm"  
+        size="sm"
         onClick={() => onOpenCard(card)}
         className={`group touch-none cursor-grab active:cursor-grabbing transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md ${
           isDragging ? "opacity-40" : "opacity-100"
         } ${card.isCompleted ? "bg-muted/40 opacity-60" : ""}`}
       >
         <UiCardContent className="flex items-start gap-2 pt-3">
-          <input 
+          <input
             type="checkbox"
             checked={card.isCompleted}
             onChange={(e) => onToggleCompleted?.(card.id, e.target.checked)}
@@ -70,7 +100,9 @@ export default function CardItem({ card, onToggleCompleted, onOpenCard }: CardPr
           />
 
           <div className="min-w-0 flex-1 space-y-1.5">
-            <p className={`text-sm leading-snug text-foreground ${card.isCompleted ? "text-muted-foreground line-through" : ""}`}>
+            <p
+              className={`text-sm leading-snug text-foreground ${card.isCompleted ? "text-muted-foreground line-through" : ""}`}
+            >
               {card.title}
             </p>
 
