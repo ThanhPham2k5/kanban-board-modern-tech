@@ -1,19 +1,10 @@
 import Header from "@/components/Header";
 import BoardView from "@/components/BoardView";
-import { createClient } from "@/lib/server";
+import { getFullData } from "@/actions/checklist-actions";
 
 export default async function Home() {
-  const supabase = await createClient();
-
-  const { data: lists } = await supabase
-    .from("lists")
-    .select("*")
-    .order("order", { ascending: true });
-
-  const { data: cards } = await supabase
-    .from("cards")
-    .select("*")
-    .order("order", { ascending: true });
+  const lists = await getFullData();
+  const cards = lists.flatMap((list) => list.cards);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">

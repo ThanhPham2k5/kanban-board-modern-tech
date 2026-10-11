@@ -12,26 +12,38 @@ import {
   Edge,
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { DropIndicator } from "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator/box";
-import { Button } from "@/components/ui/button"; 
+import { Button } from "@/components/ui/button";
 import { Plus, Trash2, X } from "lucide-react";
 
 interface ListProps {
   list: { id: string; title: string; order: string };
-  cards?: { id: string; title: string; list_id: string; order: string; isCompleted?: boolean }[]; 
+  cards?: {
+    id: string;
+    title: string;
+    list_id: string;
+    order: string;
+    isCompleted?: boolean;
+  }[];
   onUpdateTitle: (id: string, newTitle: string) => void;
   onDelete: (id: string) => void;
-  onOpenCard: (card: { id: string; title: string; list_id: string; order: string; isCompleted?: boolean }) => void;
+  onOpenCard: (card: {
+    id: string;
+    title: string;
+    list_id: string;
+    order: string;
+    isCompleted?: boolean;
+  }) => void;
   // Thêm prop này để báo cho BoardView biết có thẻ mới
-  onAddCard?: (listId: string, title: string) => void; 
+  onAddCard?: (listId: string, title: string) => void;
   onToggleComplete: (id: string, isCompleted: boolean) => void;
 }
 
 export default function ListContainer({
   list,
-  cards = [], 
+  cards = [],
   onUpdateTitle,
   onDelete,
-  onOpenCard, 
+  onOpenCard,
   onAddCard,
   onToggleComplete,
 }: ListProps) {
@@ -68,7 +80,7 @@ export default function ListContainer({
 
     const cleanupDrag = draggable({
       element: li,
-      dragHandle: handle, 
+      dragHandle: handle,
       getInitialData: () => ({ id: list.id, type: "list" }),
       onDragStart: () => setIsDragging(true),
       onDrop: () => setIsDragging(false),
@@ -141,11 +153,11 @@ export default function ListContainer({
 
       <div className="flex-1 overflow-y-auto px-3 py-1 flex flex-col gap-2 min-h-[10px]">
         {cards.map((card) => (
-          <CardItem 
-            key={card.id} 
-            card={card} 
-            onOpenCard={onOpenCard} 
-            onToggleComplete={onToggleComplete} 
+          <CardItem
+            key={card.id}
+            card={card}
+            onOpenCard={onOpenCard}
+            onToggleComplete={onToggleComplete}
           />
         ))}
       </div>
@@ -169,8 +181,14 @@ export default function ListContainer({
               rows={2}
             />
             <div className="flex items-center gap-1">
-              <Button size="sm" onClick={handleAddCardSubmit}>Thêm</Button>
-              <Button size="icon" variant="ghost" onClick={() => setIsAddingCard(false)}>
+              <Button size="sm" onClick={handleAddCardSubmit}>
+                Thêm
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => setIsAddingCard(false)}
+              >
                 <X className="h-4 w-4" />
               </Button>
             </div>
