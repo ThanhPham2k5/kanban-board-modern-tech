@@ -206,9 +206,9 @@ export default function ListContainer({
   return (
     <div
       ref={listRef}
-      className={`relative shrink-0 w-80 max-h-full flex flex-col bg-muted/50 rounded-xl border transition-all ${
+      className={`relative shrink-0 w-80 max-h-full flex flex-col bg-secondary/80 backdrop-blur-xl rounded-xl border-border/50 transition-all duration-200 ${
         isDragging
-          ? "opacity-40 shadow-xl scale-[0.98]"
+          ? "opacity-60 shadow-2xl scale-[0.98] ring-2 ring-primary/50"
           : "opacity-100 shadow-sm"
       }`}
     >
