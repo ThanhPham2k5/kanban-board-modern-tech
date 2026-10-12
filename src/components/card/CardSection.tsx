@@ -232,10 +232,12 @@ export function CardSection({
   return (
     <div
       ref={sectionRef}
-      className={`flex flex-col gap-3 transition-colors rounded-xl p-1 -m-1 ${
+      className={`flex flex-col transition-all rounded-xl p-2 -m-2 ${
+        cards.length > 0 ? "gap-3" : ""
+      } ${
         isDraggedOver
-          ? "bg-primary/5 border-2 border-dashed border-primary"
-          : ""
+          ? "ring-2 ring-primary/60 bg-muted/25 rounded-xl"
+          : "rounded-xl"
       }`}
     >
       <div className="grid grid-cols-1 gap-3">

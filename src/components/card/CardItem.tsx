@@ -196,7 +196,7 @@ export function CardItem({
           <div className="absolute -bottom-px left-1 right-1 h-0 border-t-2 border-primary z-20 pointer-events-none" />
         )}
 
-        <CardHeader className="pb-3">
+        <CardHeader>
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0 flex-1">
               <div onClick={(e) => e.stopPropagation()}>
