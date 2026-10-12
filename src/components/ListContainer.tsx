@@ -1,38 +1,27 @@
 "use client";
 
-import CardItem from "./CardItem";
-import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { CardWithChecklists } from "@/lib/definitions";
+import {
+  attachClosestEdge,
+  Edge,
+  extractClosestEdge,
+} from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
+import { DropIndicator } from "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator/box";
 import {
   draggable,
   dropTargetForElements,
 } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import {
-  attachClosestEdge,
-  extractClosestEdge,
-  Edge,
-} from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
-import { DropIndicator } from "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator/box";
-import { Button } from "@/components/ui/button";
 import { Plus, Trash2, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import CardItem from "./CardItem";
 
 interface ListProps {
   list: { id: string; title: string; order: string };
-  cards?: {
-    id: string;
-    title: string;
-    list_id: string;
-    order: string;
-    isCompleted?: boolean;
-  }[];
+  cards?: CardWithChecklists[];
   onUpdateTitle: (id: string, newTitle: string) => void;
   onDelete: (id: string) => void;
-  onOpenCard: (card: {
-    id: string;
-    title: string;
-    list_id: string;
-    order: string;
-    isCompleted?: boolean;
-  }) => void;
+  onOpenCard: (card: CardWithChecklists) => void;
   // Thêm prop này để báo cho BoardView biết có thẻ mới
   onAddCard?: (listId: string, title: string) => void;
   onToggleComplete: (id: string, isCompleted: boolean) => void;

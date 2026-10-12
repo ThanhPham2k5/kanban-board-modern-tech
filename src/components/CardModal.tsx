@@ -1,19 +1,13 @@
 "use client";
 
-import { X, AlignLeft, CheckCircle2, Trash2 } from "lucide-react";
-import { Button } from "./ui/button";
-import { useState, useEffect } from "react";
+import { CardWithChecklists, ChecklistWithItems } from "@/lib/definitions";
+import { AlignLeft, CheckCircle2, Trash2, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { ChecklistSection } from "./checklist/checklist-section";
+import { Button } from "./ui/button";
 
 interface CardModalProps {
-  card: {
-    id: string;
-    title: string;
-    list_id: string;
-    order: string;
-    isCompleted?: boolean;
-    description?: string;
-  } | null;
+  card: CardWithChecklists | null;
   listTitle?: string;
   isOpen: boolean;
   onClose: () => void;
@@ -21,6 +15,7 @@ interface CardModalProps {
   onDeleteCard: (id: string) => void;
   onUpdateDescription: (id: string, newDesc: string) => void;
   onUpdateTitle: (id: string, newTitle: string) => void; // Thêm prop này
+  onChange: (updatedChecklists: ChecklistWithItems[]) => void;
 }
 
 export default function CardModal({
@@ -32,6 +27,7 @@ export default function CardModal({
   onDeleteCard,
   onUpdateDescription,
   onUpdateTitle,
+  onChange,
 }: CardModalProps) {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editTitle, setEditTitle] = useState("");
@@ -41,7 +37,7 @@ export default function CardModal({
     if (card) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setEditTitle(card.title);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+
       setIsEditingTitle(false);
     }
   }, [card]);
@@ -109,7 +105,14 @@ export default function CardModal({
               onBlur={(e) => onUpdateDescription(card.id, e.target.value)}
             />
 
-            <div>aaaaaaaa</div>
+            <div>
+              <ChecklistSection
+                key={card.id}
+                cardId={card.id}
+                checklists={card.checklists}
+                onChange={(newChecklists) => onChange(newChecklists)}
+              />
+            </div>
           </div>
 
           {/* Cột phải: Các nút hành động */}
@@ -119,18 +122,18 @@ export default function CardModal({
             </p>
 
             <Button
-              variant={card.isCompleted ? "secondary" : "outline"}
+              variant={card.is_completed ? "secondary" : "outline"}
               size="sm"
               className="w-full justify-start"
               onClick={() => {
-                onToggleComplete(card.id, !!card.isCompleted);
+                onToggleComplete(card.id, !!card.is_completed);
                 // Đã gỡ onClose() để người dùng thấy trạng thái thay đổi tức thời
               }}
             >
               <CheckCircle2
-                className={`h-4 w-4 mr-2 transition-colors ${card.isCompleted ? "text-green-600" : ""}`}
+                className={`h-4 w-4 mr-2 transition-colors ${card.is_completed ? "text-green-600" : ""}`}
               />
-              {card.isCompleted ? "Bỏ hoàn thành" : "Đánh dấu hoàn thành"}
+              {card.is_completed ? "Bỏ hoàn thành" : "Đánh dấu hoàn thành"}
             </Button>
 
             <Button

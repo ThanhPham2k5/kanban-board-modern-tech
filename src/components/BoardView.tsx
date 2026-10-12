@@ -1,38 +1,32 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
-import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
-import { generateKeyBetween } from "fractional-indexing";
-import ListContainer from "./ListContainer";
-import { Button } from "./ui/button";
-import { Plus } from "lucide-react";
-import CardModal from "./CardModal";
-import {
-  addListAction,
-  updateListAction,
-  deleteListAction,
-  updateListOrderAction,
-} from "@/actions/list-actions";
 import {
   addCardAction,
-  updateCardTitleAction,
-  updateCardDescriptionAction,
-  toggleCardCompleteAction,
   deleteCardAction,
+  toggleCardCompleteAction,
+  updateCardDescriptionAction,
   updateCardOrderAction,
+  updateCardTitleAction,
 } from "@/actions/card-actions";
+import {
+  addListAction,
+  deleteListAction,
+  updateListAction,
+  updateListOrderAction,
+} from "@/actions/list-actions";
+import { CardWithChecklists, ChecklistWithItems } from "@/lib/definitions";
+import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
+import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { generateKeyBetween } from "fractional-indexing";
+import { Plus } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import CardModal from "./CardModal";
+import ListContainer from "./ListContainer";
+import { Button } from "./ui/button";
 
 interface BoardViewProps {
   initialLists: { id: string; title: string; order: string }[];
-  initialCards: {
-    id: string;
-    title: string;
-    list_id: string;
-    order: string;
-    isCompleted?: boolean;
-    description?: string;
-  }[];
+  initialCards: CardWithChecklists[];
 }
 
 export default function BoardView({
@@ -45,18 +39,29 @@ export default function BoardView({
     ),
   );
 
-  const [cards, setCards] = useState(() =>
-    [...initialCards].sort((a, b) => (a.order < b.order ? -1 : 1)),
-  );
+  const [cards, setCards] = useState<CardWithChecklists[]>(initialCards);
 
-  const [selectedCard, setSelectedCard] = useState<{
-    id: string;
-    title: string;
-    list_id: string;
-    order: string;
-    isCompleted?: boolean;
-    description?: string;
-  } | null>(null);
+  function handleChecklistsChange(
+    cardId: string,
+    updatedChecklists: ChecklistWithItems[],
+  ) {
+    setCards((prevCards) => {
+      const newCards = prevCards.map((card) =>
+        card.id === cardId ? { ...card, checklists: updatedChecklists } : card,
+      );
+
+      if (selectedCard && selectedCard.id === cardId) {
+        const updatedCard = newCards.find((c) => c.id === cardId) || null;
+        setSelectedCard(updatedCard);
+      }
+
+      return newCards;
+    });
+  }
+
+  const [selectedCard, setSelectedCard] = useState<CardWithChecklists | null>(
+    null,
+  );
 
   const listRef = useRef(lists);
   const cardsRef = useRef(cards);
@@ -72,7 +77,7 @@ export default function BoardView({
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLists(initialLists);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+
     setCards(initialCards);
   }, [initialLists, initialCards]);
 
@@ -134,8 +139,9 @@ export default function BoardView({
       title: title,
       list_id: listId,
       order: newOrder,
-      isCompleted: false,
+      is_completed: false,
       description: "",
+      checklists: [],
     };
 
     setCards((prev) => [...prev, tempCard]);
@@ -336,16 +342,21 @@ export default function BoardView({
         </Button>
       </div>
 
-      <CardModal
-        card={selectedCard}
-        listTitle={lists.find((l) => l.id === selectedCard?.list_id)?.title}
-        isOpen={!!selectedCard}
-        onClose={() => setSelectedCard(null)}
-        onToggleComplete={toggleCardComplete}
-        onDeleteCard={deleteCard}
-        onUpdateDescription={updateCardDescription}
-        onUpdateTitle={updateCardTitle}
-      />
+      {selectedCard && (
+        <CardModal
+          card={selectedCard}
+          listTitle={lists.find((l) => l.id === selectedCard?.list_id)?.title}
+          isOpen={!!selectedCard}
+          onClose={() => setSelectedCard(null)}
+          onToggleComplete={toggleCardComplete}
+          onDeleteCard={deleteCard}
+          onUpdateDescription={updateCardDescription}
+          onUpdateTitle={updateCardTitle}
+          onChange={(newChecklists) =>
+            handleChecklistsChange(selectedCard.id, newChecklists)
+          }
+        />
+      )}
     </>
   );
 }

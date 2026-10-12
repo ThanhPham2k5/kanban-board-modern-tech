@@ -1,39 +1,28 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import {
+  attachClosestEdge,
+  Edge,
+  extractClosestEdge,
+} from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
+import { DropIndicator } from "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator/box";
 import {
   draggable,
   dropTargetForElements,
 } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import {
-  attachClosestEdge,
-  extractClosestEdge,
-  Edge,
-} from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
-import { DropIndicator } from "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator/box";
+import { useEffect, useRef, useState } from "react";
 
 import {
   Card as UiCard,
   CardContent as UiCardContent,
 } from "@/components/ui/card";
+import { CardWithChecklists } from "@/lib/definitions";
 
 interface CardProps {
-  card: {
-    id: string;
-    title: string;
-    list_id: string;
-    order: string;
-    is_completed?: boolean;
-  };
+  card: CardWithChecklists;
   // Sửa thành onToggleComplete (bỏ chữ d) để khớp với BoardView
   onToggleComplete?: (id: string, status: boolean) => void;
-  onOpenCard: (card: {
-    id: string;
-    title: string;
-    list_id: string;
-    order: string;
-    is_completed?: boolean;
-  }) => void;
+  onOpenCard: (card: CardWithChecklists) => void;
 }
 
 // Sửa thành onToggleComplete (bỏ chữ d)
