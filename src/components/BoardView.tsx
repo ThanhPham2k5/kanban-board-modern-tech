@@ -8,6 +8,7 @@ import ListContainer from "./ListContainer";
 import { Button } from "./ui/button";
 import { Plus } from "lucide-react";
 import CardModal from "./CardModal";
+
 import {
   addListAction,
   updateListAction,
@@ -30,7 +31,7 @@ interface BoardViewProps {
     title: string;
     list_id: string;
     order: string;
-    isCompleted?: boolean;
+    is_completed?: boolean;
     description?: string;
   }[];
 }
@@ -54,7 +55,7 @@ export default function BoardView({
     title: string;
     list_id: string;
     order: string;
-    isCompleted?: boolean;
+    is_completed?: boolean;
     description?: string;
   } | null>(null);
 
@@ -134,7 +135,7 @@ export default function BoardView({
       title: title,
       list_id: listId,
       order: newOrder,
-      isCompleted: false,
+      is_completed: false,
       description: "",
     };
 
@@ -161,11 +162,11 @@ export default function BoardView({
   const toggleCardComplete = async (id: string, currentStatus: boolean) => {
     const newStatus = !currentStatus;
     setCards(
-      cards.map((c) => (c.id === id ? { ...c, isCompleted: newStatus } : c)),
+      cards.map((c) => (c.id === id ? { ...c, is_completed: newStatus } : c)),
     );
     if (selectedCard?.id === id)
       setSelectedCard((prev) =>
-        prev ? { ...prev, isCompleted: newStatus } : null,
+        prev ? { ...prev, is_completed: newStatus } : null,
       );
     await toggleCardCompleteAction(id, newStatus).catch(console.error);
   };

@@ -33,7 +33,7 @@ interface ListProps {
     order: string;
     isCompleted?: boolean;
   }) => void;
-  // Thêm prop này để báo cho BoardView biết có thẻ mới
+
   onAddCard?: (listId: string, title: string) => void;
   onToggleComplete: (id: string, isCompleted: boolean) => void;
 }
@@ -55,7 +55,6 @@ export default function ListContainer({
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(list.title);
 
-  // Thêm state để quản lý form tạo thẻ mới
   const [isAddingCard, setIsAddingCard] = useState(false);
   const [newCardTitle, setNewCardTitle] = useState("");
 
@@ -99,12 +98,11 @@ export default function ListContainer({
     }
   };
 
-  // Hàm xử lý lưu thẻ mới
   const handleAddCardSubmit = () => {
     if (newCardTitle.trim() && onAddCard) {
       onAddCard(list.id, newCardTitle.trim());
-      setNewCardTitle(""); // Xóa rỗng input
-      setIsAddingCard(false); // Đóng form
+      setNewCardTitle(""); 
+      setIsAddingCard(false);
     }
   };
 
@@ -162,7 +160,6 @@ export default function ListContainer({
         ))}
       </div>
 
-      {/* Khu vực thêm thẻ đã được cải tiến */}
       <div className="p-2 pt-1">
         {isAddingCard ? (
           <div className="flex flex-col gap-2 bg-background p-2 rounded-md border shadow-sm">
