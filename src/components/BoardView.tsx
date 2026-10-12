@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { generateKeyBetween } from "fractional-indexing";
@@ -36,6 +36,8 @@ export default function BoardView({
 
   const listRef = useRef(lists);
   const cardsRef = useRef(cards);
+
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     listRef.current = lists;
@@ -73,6 +75,14 @@ export default function BoardView({
       console.log("Thêm list lỗi: ", error);
     }
   };
+
+  // listen add button on header to trigger add list action
+  useEffect(() => {
+    const handleTriggerAddList = () => addList();
+    window.addEventListener("trigger-add-list", handleTriggerAddList);
+    return () =>
+      window.removeEventListener("trigger-add-list", handleTriggerAddList);
+  }, []);
 
   const updateList = async (id: string, newTitle: string) => {
     setLists(
