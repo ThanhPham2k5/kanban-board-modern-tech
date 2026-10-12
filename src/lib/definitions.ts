@@ -34,6 +34,12 @@ export type UpdateChecklistItemInput = {
   content?: string;
   is_checked?: boolean;
 };
+export type CreateCardInput = Omit<Card, "id">;
+export type UpdateCardInput = {
+  title?: string;
+  description?: string;
+  is_completed?: boolean;
+};
 export interface ChecklistWithItems extends Checklist {
   items: ChecklistItem[];
 }
