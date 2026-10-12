@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { CardWithChecklists } from "@/lib/definitions";
+import { CardWithChecklists, ChecklistWithItems } from "@/lib/definitions";
 import {
   attachClosestEdge,
   extractClosestEdge,
@@ -25,6 +25,7 @@ import {
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 import { GripVertical, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { ChecklistSection } from "../checklist/checklist-section";
 
 interface CardItemProps {
   card: CardWithChecklists;
@@ -179,6 +180,10 @@ export function CardItem({
     }
   }
 
+  function handleChecklistsChange(updatedChecklists: ChecklistWithItems[]) {
+    onCardUpdated({ ...card, checklists: updatedChecklists });
+  }
+
   return (
     <>
       <Card
@@ -306,7 +311,14 @@ export function CardItem({
             />
           </div>
 
-          <div className="pt-4 border-t"></div>
+          <div className="pt-4 border-t">
+            <ChecklistSection
+              key={card.id}
+              cardId={card.id}
+              checklists={card.checklists}
+              onChange={handleChecklistsChange}
+            />
+          </div>
         </DialogContent>
       </Dialog>
     </>
