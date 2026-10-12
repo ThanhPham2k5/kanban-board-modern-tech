@@ -14,11 +14,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { CardWithChecklists, ChecklistWithItems } from "@/lib/definitions";
 import { useState } from "react";
-import {
-  CardWithChecklists,
-  ChecklistWithItems,
-} from "../../../src/app/lib/definitions";
 import { ChecklistSection } from "./checklist-section";
 
 interface CardMockModalProps {

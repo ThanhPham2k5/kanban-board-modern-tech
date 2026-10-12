@@ -1,4 +1,4 @@
-import { getFullData } from "@/app/lib/actions";
+import { getFullData } from "@/actions/checklist-actions";
 import { CardMockModal } from "@/components/checklist/card-mock-modal";
 
 export default async function Home() {
