@@ -25,7 +25,6 @@ interface CardProps {
   onOpenCard: (card: CardWithChecklists) => void;
 }
 
-// Sửa thành onToggleComplete (bỏ chữ d)
 export default function CardItem({
   card,
   onToggleComplete,
@@ -75,20 +74,18 @@ export default function CardItem({
       <UiCard
         size="sm"
         onClick={() => onOpenCard(card)}
-        className={`group touch-none cursor-grab active:cursor-grabbing transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md ${
-          isDragging ? "opacity-40" : "opacity-100"
+        className={`group touch-none cursor-grab active:cursor-grabbing transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${
+          isDragging
+            ? "opacity-30 scale-95 shadow-xl border-primary"
+            : "opacity-100"
         } ${card.is_completed ? "bg-muted/40 opacity-60" : ""}`}
       >
         <UiCardContent className="flex items-start gap-2 pt-3">
           <input
             type="checkbox"
             checked={!!card.is_completed}
-            onChange={() => {
-              onToggleComplete?.(card.id, !!card.is_completed);
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-            }}
+            onChange={() => onToggleComplete?.(card.id, !!card.is_completed)}
+            onClick={(e) => e.stopPropagation()}
             className="mt-1 h-4 w-4 cursor-pointer"
           />
 
@@ -98,14 +95,21 @@ export default function CardItem({
             >
               {card.title}
             </p>
-
-            {/* DIV CHECKLIST */}
             <div id={`checklist-placeholder-${card.id}`} className="mt-2"></div>
           </div>
         </UiCardContent>
       </UiCard>
 
-      {closestEdge && <DropIndicator edge={closestEdge} gap="8px" />}
+      {closestEdge && (
+        <div
+          className={`absolute left-0 right-0 z-50 pointer-events-none flex items-center ${
+            closestEdge === "top" ? "-top-[5px]" : "-bottom-[5px]"
+          }`}
+        >
+          <div className="w-2.5 h-2.5 rounded-full bg-primary border-2 border-background shadow-sm" />
+          <div className="h-[3px] bg-primary flex-1 shadow-sm rounded-r-full" />
+        </div>
+      )}
     </div>
   );
 }

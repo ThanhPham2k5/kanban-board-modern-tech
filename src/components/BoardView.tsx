@@ -1,28 +1,21 @@
 "use client";
 
-import {
-  addCardAction,
-  deleteCardAction,
-  toggleCardCompleteAction,
-  updateCardDescriptionAction,
-  updateCardOrderAction,
-  updateCardTitleAction,
-} from "@/actions/card-actions";
+import { useRef, useEffect, useState } from "react";
+import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
+import { generateKeyBetween } from "fractional-indexing";
+import ListContainer from "./ListContainer";
+import { Button } from "./ui/button";
+import { Plus } from "lucide-react";
+
 import {
   addListAction,
   deleteListAction,
   updateListAction,
   updateListOrderAction,
 } from "@/actions/list-actions";
-import { CardWithChecklists, ChecklistWithItems } from "@/lib/definitions";
-import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
-import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { generateKeyBetween } from "fractional-indexing";
-import { Plus } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import CardModal from "./CardModal";
-import ListContainer from "./ListContainer";
-import { Button } from "./ui/button";
+import { updateCardOrderAction } from "@/actions/card-actions";
+import { CardWithChecklists } from "@/lib/definitions";
 
 interface BoardViewProps {
   initialLists: { id: string; title: string; order: string }[];
@@ -41,28 +34,6 @@ export default function BoardView({
 
   const [cards, setCards] = useState<CardWithChecklists[]>(initialCards);
 
-  function handleChecklistsChange(
-    cardId: string,
-    updatedChecklists: ChecklistWithItems[],
-  ) {
-    setCards((prevCards) => {
-      const newCards = prevCards.map((card) =>
-        card.id === cardId ? { ...card, checklists: updatedChecklists } : card,
-      );
-
-      if (selectedCard && selectedCard.id === cardId) {
-        const updatedCard = newCards.find((c) => c.id === cardId) || null;
-        setSelectedCard(updatedCard);
-      }
-
-      return newCards;
-    });
-  }
-
-  const [selectedCard, setSelectedCard] = useState<CardWithChecklists | null>(
-    null,
-  );
-
   const listRef = useRef(lists);
   const cardsRef = useRef(cards);
 
@@ -75,23 +46,16 @@ export default function BoardView({
   }, [cards]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLists(initialLists);
-
     setCards(initialCards);
   }, [initialLists, initialCards]);
 
   const addList = async () => {
     const lastList = lists[lists.length - 1];
     const newOrder = generateKeyBetween(lastList?.order || null, null);
-
     const tempId = crypto.randomUUID();
 
-    const newList = {
-      id: tempId,
-      title: "Danh sách mới",
-      order: newOrder,
-    };
+    const newList = { id: tempId, title: "Danh sách mới", order: newOrder };
     setLists([...lists, newList]);
 
     try {
@@ -99,14 +63,14 @@ export default function BoardView({
         newList.title,
         newList.order.toString(),
       );
-      setLists((prevLists) =>
-        prevLists.map((list) =>
+      setLists((prev) =>
+        prev.map((list) =>
           list.id === tempId ? { ...list, id: savedList.id } : list,
         ),
       );
     } catch (error) {
-      setLists((prevLists) => prevLists.filter((list) => list.id !== tempId));
-      console.log("Thêm list không thành công ", error);
+      setLists((prev) => prev.filter((list) => list.id !== tempId));
+      console.log("Thêm list lỗi: ", error);
     }
   };
 
@@ -156,75 +120,6 @@ export default function BoardView({
     updateListOrderAction(id, newOrderString).catch(console.error);
   };
 
-  const handleAddCard = async (listId: string, title: string) => {
-    const cardsInList = cardsRef.current
-      .filter((c) => c.list_id === listId)
-      .sort((a, b) => (a.order < b.order ? -1 : 1));
-    const lastCard = cardsInList[cardsInList.length - 1];
-    const newOrder = generateKeyBetween(lastCard ? lastCard.order : null, null);
-
-    const tempId = crypto.randomUUID();
-    const tempCard = {
-      id: tempId,
-      title: title,
-      list_id: listId,
-      order: newOrder,
-      is_completed: false,
-      description: "",
-      checklists: [],
-    };
-
-    setCards((prev) => [...prev, tempCard]);
-
-    try {
-      const savedCard = await addCardAction(listId, title, newOrder);
-      setCards((prev) =>
-        prev.map((c) => (c.id === tempId ? { ...c, id: savedCard.id } : c)),
-      );
-    } catch (error) {
-      setCards((prev) => prev.filter((c) => c.id !== tempId));
-      console.error("Lỗi khi thêm card:", error);
-    }
-  };
-
-  const updateCardTitle = async (id: string, newTitle: string) => {
-    setCards(cards.map((c) => (c.id === id ? { ...c, title: newTitle } : c)));
-    if (selectedCard?.id === id)
-      setSelectedCard((prev) => (prev ? { ...prev, title: newTitle } : null));
-    await updateCardTitleAction(id, newTitle).catch(console.error);
-  };
-
-  const toggleCardComplete = async (id: string, currentStatus: boolean) => {
-    const newStatus = !currentStatus;
-    setCards(
-      cards.map((c) => (c.id === id ? { ...c, isCompleted: newStatus } : c)),
-    );
-    if (selectedCard?.id === id)
-      setSelectedCard((prev) =>
-        prev ? { ...prev, isCompleted: newStatus } : null,
-      );
-    await toggleCardCompleteAction(id, newStatus).catch(console.error);
-  };
-
-  const deleteCard = async (id: string) => {
-    if (confirm("Bạn có chắc muốn xoá thẻ này?")) {
-      setCards(cards.filter((c) => c.id !== id));
-      setSelectedCard(null);
-      await deleteCardAction(id).catch(console.error);
-    }
-  };
-
-  const updateCardDescription = async (id: string, newDesc: string) => {
-    setCards(
-      cards.map((c) => (c.id === id ? { ...c, description: newDesc } : c)),
-    );
-    if (selectedCard?.id === id)
-      setSelectedCard((prev) =>
-        prev ? { ...prev, description: newDesc } : null,
-      );
-    await updateCardDescriptionAction(id, newDesc).catch(console.error);
-  };
-
   useEffect(() => {
     const cleanup = monitorForElements({
       onDrop({ source, location }) {
@@ -234,7 +129,6 @@ export default function BoardView({
         if (source.data.type === "list" && destination.data.type === "list") {
           const draggedId = source.data.id as string;
           const targetId = destination.data.id as string;
-
           if (draggedId === targetId) return;
 
           const edge = extractClosestEdge(destination.data);
@@ -254,18 +148,19 @@ export default function BoardView({
           if (
             prevOrder === draggedItem.order ||
             nextOrder === draggedItem.order
-          ) {
+          )
             return prevLists;
-          }
 
           const newOrderString = generateKeyBetween(prevOrder, nextOrder);
           const updateLists = prevLists.map((l) =>
             l.id === draggedId ? { ...l, order: newOrderString } : l,
           );
-          const sortedLists = updateLists.sort((a, b) =>
-            a.order < b.order ? -1 : a.order > b.order ? 1 : 0,
+
+          setLists(
+            updateLists.sort((a, b) =>
+              a.order < b.order ? -1 : a.order > b.order ? 1 : 0,
+            ),
           );
-          setLists(sortedLists);
           updateListOrderAction(draggedId, newOrderString).catch(console.error);
         }
 
@@ -354,11 +249,9 @@ export default function BoardView({
             key={list.id}
             list={list}
             cards={cards.filter((card) => card.list_id === list.id)}
+            setCards={setCards}
             onUpdateTitle={updateList}
             onDelete={deleteList}
-            onOpenCard={(card) => setSelectedCard(card)}
-            onAddCard={handleAddCard}
-            onToggleComplete={toggleCardComplete}
             onMoveList={moveListKeyBoard}
           />
         ))}
@@ -372,22 +265,6 @@ export default function BoardView({
           Thêm danh sách
         </Button>
       </div>
-
-      {selectedCard && (
-        <CardModal
-          card={selectedCard}
-          listTitle={lists.find((l) => l.id === selectedCard?.list_id)?.title}
-          isOpen={!!selectedCard}
-          onClose={() => setSelectedCard(null)}
-          onToggleComplete={toggleCardComplete}
-          onDeleteCard={deleteCard}
-          onUpdateDescription={updateCardDescription}
-          onUpdateTitle={updateCardTitle}
-          onChange={(newChecklists) =>
-            handleChecklistsChange(selectedCard.id, newChecklists)
-          }
-        />
-      )}
     </>
   );
 }

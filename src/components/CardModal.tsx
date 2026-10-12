@@ -32,12 +32,9 @@ export default function CardModal({
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editTitle, setEditTitle] = useState("");
 
-  // Cập nhật lại state khi mở modal thẻ khác
   useEffect(() => {
     if (card) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setEditTitle(card.title);
-
       setIsEditingTitle(false);
     }
   }, [card]);
@@ -54,7 +51,6 @@ export default function CardModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="relative w-full max-w-2xl rounded-xl bg-background p-6 shadow-lg border">
-        {/* Nút Đóng */}
         <button
           onClick={onClose}
           className="absolute right-4 top-4 text-muted-foreground hover:text-foreground"
@@ -62,7 +58,6 @@ export default function CardModal({
           <X className="h-5 w-5" />
         </button>
 
-        {/* Tiêu đề thẻ (Có thể click để sửa) */}
         <div className="mb-6 pr-8">
           {isEditingTitle ? (
             <input
@@ -92,7 +87,6 @@ export default function CardModal({
         </div>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-[1fr_180px]">
-          {/* Cột trái: Mô tả */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-sm font-semibold">
               <AlignLeft className="h-4 w-4" />
@@ -114,24 +108,30 @@ export default function CardModal({
               />
             </div>
           </div>
+          {/* cột phải */}
 
-          {/* Cột phải: Các nút hành động */}
           <div className="space-y-2 sm:border-l sm:pl-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">
               Hành động
             </p>
-
             <Button
               variant={card.is_completed ? "secondary" : "outline"}
               size="sm"
-              className="w-full justify-start"
+              className={`w-full justify-start group transition-all duration-300 ${
+                card.is_completed
+                  ? "hover:bg-amber-500/10 hover:text-amber-600"
+                  : "hover:bg-green-500/10 hover:text-green-600 hover:border-green-500/30"
+              }`}
               onClick={() => {
                 onToggleComplete(card.id, !!card.is_completed);
-                // Đã gỡ onClose() để người dùng thấy trạng thái thay đổi tức thời
               }}
             >
               <CheckCircle2
-                className={`h-4 w-4 mr-2 transition-colors ${card.is_completed ? "text-green-600" : ""}`}
+                className={`h-4 w-4 mr-2 transition-all duration-300 group-hover:scale-110 ${
+                  card.is_completed
+                    ? "text-green-600 group-hover:text-amber-600"
+                    : "group-hover:text-green-600"
+                }`}
               />
               {card.is_completed ? "Bỏ hoàn thành" : "Đánh dấu hoàn thành"}
             </Button>
@@ -139,13 +139,12 @@ export default function CardModal({
             <Button
               variant="outline"
               size="sm"
-              className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
+              className="w-full justify-start group text-destructive transition-all duration-300 hover:text-destructive hover:bg-destructive/10 hover:border-destructive/40"
               onClick={() => {
                 onDeleteCard(card.id);
-                // Xóa xong thì bắt buộc phải đóng modal
               }}
             >
-              <Trash2 className="h-4 w-4 mr-2" />
+              <Trash2 className="h-4 w-4 mr-2 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-12" />
               Xóa thẻ
             </Button>
           </div>
