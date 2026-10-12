@@ -25,6 +25,7 @@ interface ListProps {
   // Thêm prop này để báo cho BoardView biết có thẻ mới
   onAddCard?: (listId: string, title: string) => void;
   onToggleComplete: (id: string, isCompleted: boolean) => void;
+  onMoveList?: (id: string, direction: "left" | "right") => void;
 }
 
 export default function ListContainer({
@@ -35,6 +36,7 @@ export default function ListContainer({
   onOpenCard,
   onAddCard,
   onToggleComplete,
+  onMoveList,
 }: ListProps) {
   const listRef = useRef<HTMLDivElement>(null);
   const dragHandleRef = useRef<HTMLDivElement>(null);
@@ -81,10 +83,21 @@ export default function ListContainer({
     };
   }, [list.id]);
 
+  // Move list using keyboard
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      onUpdateTitle(list.id, editTitle);
-      setIsEditing(false);
+    if (isEditing) return;
+
+    if (e.ctrlKey || e.metaKey) {
+      if (e.key === "ArrowLeft" && onMoveList) {
+        e.preventDefault();
+        onMoveList(list.id, "left");
+      } else if (e.key === "ArrowRight" && onMoveList) {
+        e.preventDefault();
+        onMoveList(list.id, "right");
+      }
+    } else if (e.key === " ") {
+      e.preventDefault();
+      setIsEditing(true);
     }
   };
 
@@ -106,18 +119,30 @@ export default function ListContainer({
 
       <div
         ref={dragHandleRef}
-        className="p-3 pb-2 flex justify-between items-center cursor-grab active:cursor-grabbing group"
+        tabIndex={0}
+        role="button"
+        aria-roledescription="sortable list"
+        aria-label={`Danh sách ${list.title}. Nhấn Enter để sửa tên. Nhấn Control và mũi tên Trái Phải để di chuyển`}
+        onKeyDown={handleKeyDown}
+        className="p-3 pb-2 flex justify-between items-center cursor-grab active:cursor-grabbing group focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-t-xl"
       >
         {isEditing ? (
           <input
             autoFocus
             value={editTitle}
             onChange={(e) => setEditTitle(e.target.value)}
+            // mouse user
             onBlur={() => {
               onUpdateTitle(list.id, editTitle);
               setIsEditing(false);
             }}
-            onKeyDown={handleKeyDown}
+            // keyboard user
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                onUpdateTitle(list.id, editTitle);
+                setIsEditing(false);
+              }
+            }}
             className="flex-1 px-2 py-1 text-sm font-semibold border-2 border-primary rounded-md outline-none bg-background"
           />
         ) : (
@@ -134,7 +159,7 @@ export default function ListContainer({
           variant="ghost"
           size="icon"
           onClick={() => onDelete(list.id)}
-          className="h-8 w-8 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+          className="h-8 w-8 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 focus-visible:opacity-100 focus-visible:text-destructive transition-opacity"
         >
           <Trash2 className="h-4 w-4" />
         </Button>

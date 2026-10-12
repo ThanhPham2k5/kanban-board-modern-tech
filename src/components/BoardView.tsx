@@ -126,6 +126,36 @@ export default function BoardView({
     }
   };
 
+  const moveListKeyBoard = (id: string, direction: "left" | "right") => {
+    const prevLists = listRef.current;
+    const index = prevLists.findIndex((list) => list.id === id);
+    if (index === -1) return;
+
+    let prevOrder = null;
+    let nextOrder = null;
+
+    if (direction === "left" && index > 0) {
+      prevOrder = prevLists[index - 2]?.order || null;
+      nextOrder = prevLists[index - 1].order || null;
+    } else if (direction === "right" && index < prevLists.length - 1) {
+      prevOrder = prevLists[index + 1].order || null;
+      nextOrder = prevLists[index + 2]?.order || null;
+    } else {
+      return;
+    }
+
+    const newOrderString = generateKeyBetween(prevOrder, nextOrder);
+
+    const updatedLists = prevLists.map((list) =>
+      list.id === id ? { ...list, order: newOrderString } : list,
+    );
+    const sortedLists = updatedLists.sort((a, b) =>
+      a.order < b.order ? -1 : a.order > b.order ? 1 : 0,
+    );
+    setLists(sortedLists);
+    updateListOrderAction(id, newOrderString).catch(console.error);
+  };
+
   const handleAddCard = async (listId: string, title: string) => {
     const cardsInList = cardsRef.current
       .filter((c) => c.list_id === listId)
@@ -329,6 +359,7 @@ export default function BoardView({
             onOpenCard={(card) => setSelectedCard(card)}
             onAddCard={handleAddCard}
             onToggleComplete={toggleCardComplete}
+            onMoveList={moveListKeyBoard}
           />
         ))}
 
