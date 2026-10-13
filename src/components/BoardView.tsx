@@ -15,10 +15,10 @@ import {
   updateListOrderAction,
 } from "@/actions/list-actions";
 import { updateCardOrderAction } from "@/actions/card-actions";
-import { CardWithChecklists } from "@/lib/definitions";
+import { CardWithChecklists, List } from "@/lib/definitions";
 
 interface BoardViewProps {
-  initialLists: { id: string; title: string; order: string }[];
+  initialLists: List[];
   initialCards: CardWithChecklists[];
 }
 
@@ -27,7 +27,7 @@ export default function BoardView({
   initialCards,
 }: BoardViewProps) {
   const [lists, setLists] = useState(() =>
-    [...initialLists].sort((a, b) =>
+    initialLists.sort((a, b) =>
       a.order < b.order ? -1 : a.order > b.order ? 1 : 0,
     ),
   );
@@ -37,7 +37,18 @@ export default function BoardView({
   const listRef = useRef(lists);
   const cardsRef = useRef(cards);
 
+  // auto scroll to the end of lists after creating a new list
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const prevListsCount = useRef(lists.length);
+  useEffect(() => {
+    if (lists.length > prevListsCount.current) {
+      scrollContainerRef.current?.scrollTo({
+        left: scrollContainerRef.current.scrollWidth,
+        behavior: "smooth",
+      });
+    }
+    prevListsCount.current = lists.length;
+  }, [lists.length]);
 
   useEffect(() => {
     listRef.current = lists;
@@ -77,8 +88,14 @@ export default function BoardView({
   };
 
   // listen add button on header to trigger add list action
+  const addListRef = useRef(addList);
+
   useEffect(() => {
-    const handleTriggerAddList = () => addList();
+    addListRef.current = addList;
+  }, [addList]);
+
+  useEffect(() => {
+    const handleTriggerAddList = () => addListRef.current();
     window.addEventListener("trigger-add-list", handleTriggerAddList);
     return () =>
       window.removeEventListener("trigger-add-list", handleTriggerAddList);
@@ -253,7 +270,10 @@ export default function BoardView({
 
   return (
     <>
-      <div className="flex gap-4 h-full items-start">
+      <div
+        ref={scrollContainerRef}
+        className="flex gap-4 flex-1 items-start overflow-x-auto p-4 md:p-6"
+      >
         {lists.map((list) => (
           <ListContainer
             key={list.id}

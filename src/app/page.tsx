@@ -9,7 +9,7 @@ export default async function Home() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
-      <main className="flex-1 overflow-x-auto p-4 md:p-6 bg-muted/40 dark:bg-background">
+      <main className="flex-1 flex flex-col overflow-hidden bg-muted/40 dark:bg-background">
         <BoardView initialLists={lists || []} initialCards={cards || []} />
       </main>
     </div>
