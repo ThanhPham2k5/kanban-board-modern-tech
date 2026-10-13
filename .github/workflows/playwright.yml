@@ -7,7 +7,7 @@ on:
     branches: [main, master]
 
 jobs:
-  CI workflows:
+  ci_workflows:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
