@@ -1,28 +1,55 @@
 "use server";
 
+import { ListSchema } from "@/lib/schema";
 import { supabase } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
 
 export async function addListAction(title: string, order: string) {
-  const { data, error } = await supabase
-    .from("lists")
-    .insert([{ title, order }])
-    .select()
-    .single();
-  if (error) throw new Error(error.message);
+  const validatedFields = ListSchema.safeParse({ title });
 
-  revalidatePath("/");
-  return data; // return the list for updating real ID
+  if (!validatedFields.success) {
+    throw new Error(validatedFields.error.issues[0].message);
+  }
+
+  const cleanTitle = validatedFields.data.title;
+
+  try {
+    const { data, error } = await supabase
+      .from("lists")
+      .insert([{ title: cleanTitle, order }])
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+
+    revalidatePath("/");
+    return data; // return the list for updating real ID
+  } catch (error) {
+    console.error(error);
+    throw new Error("Hệ thống: lưu danh sách thất bại");
+  }
 }
 
 export async function updateListAction(id: string, newTitle: string) {
-  const { error } = await supabase
-    .from("lists")
-    .update({ title: newTitle })
-    .eq("id", id);
-  if (error) throw new Error(error.message);
+  const validatedFields = ListSchema.safeParse({ title: newTitle });
 
-  revalidatePath("/");
+  if (!validatedFields.success) {
+    throw new Error(validatedFields.error.issues[0].message);
+  }
+
+  const cleanTitle = validatedFields.data.title;
+
+  try {
+    const { error } = await supabase
+      .from("lists")
+      .update({ title: cleanTitle })
+      .eq("id", id);
+    if (error) throw new Error(error.message);
+
+    revalidatePath("/");
+  } catch (error) {
+    console.error(error);
+    throw new Error("Hệ thống: cập nhật danh sách thất bại");
+  }
 }
 
 export async function deleteListAction(id: string) {

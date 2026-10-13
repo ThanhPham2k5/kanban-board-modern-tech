@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { generateKeyBetween } from "fractional-indexing";
 import ListContainer from "./ListContainer";
 import { Button } from "./ui/button";
 import { Plus } from "lucide-react";
+import { toast } from "./ui/toast";
 
 import {
   addListAction,
@@ -81,9 +82,19 @@ export default function BoardView({
           list.id === tempId ? { ...list, id: savedList.id } : list,
         ),
       );
-    } catch (error) {
+      toast.add({
+        title: "Tạo thành công!",
+        description: "Đã tạo danh sách mới thành công.",
+        type: "success",
+      });
+    } catch (error: any) {
       setLists((prev) => prev.filter((list) => list.id !== tempId));
-      console.log("Thêm list lỗi: ", error);
+
+      toast.add({
+        title: "Tạo thất bại!",
+        description: "Tạo danh sách mới thất bại. " + error.message,
+        type: "error",
+      });
     }
   };
 
@@ -102,18 +113,81 @@ export default function BoardView({
   }, []);
 
   const updateList = async (id: string, newTitle: string) => {
+    const oldList = lists.find((list) => list.id === id);
+    if (!oldList) {
+      toast.add({
+        title: "Không tìm thấy danh sách",
+        description: "Cập nhật danh sách thất bại vì không tìm thấy danh sách.",
+        type: "error",
+      });
+
+      return;
+    }
+    const oldTitle = oldList.title;
+
     setLists(
       lists.map((list) =>
         list.id === id ? { ...list, title: newTitle } : list,
       ),
     );
-    await updateListAction(id, newTitle);
+
+    try {
+      await updateListAction(id, newTitle);
+
+      toast.add({
+        title: "Cập nhật thành công!",
+        description: "Đã cập nhật danh sách thành công.",
+        type: "success",
+      });
+    } catch (error: any) {
+      setLists((prevLists) =>
+        prevLists.map((list) =>
+          list.id === id ? { ...list, title: oldTitle } : list,
+        ),
+      );
+
+      toast.add({
+        title: "Cập nhật thất bại!",
+        description: "Cập nhật danh sách thất bại. " + error.message,
+        type: "error",
+      });
+    }
   };
 
   const deleteList = async (id: string) => {
-    if (confirm("Bạn có chắc muốn xoá danh sách này?")) {
-      setLists(lists.filter((list) => list.id !== id));
+    if (!confirm("Bạn có chắc muốn xoá danh sách này?")) return;
+
+    const oldList = lists.find((list) => list.id === id);
+    if (!oldList) {
+      toast.add({
+        title: "Không tìm thấy danh sách",
+        description: "Xoá danh sách thất bại vì không tìm thấy danh sách.",
+        type: "error",
+      });
+
+      return;
+    }
+
+    const prevLists = [...lists];
+
+    setLists((prev) => prev.filter((list) => list.id !== id));
+
+    try {
       await deleteListAction(id);
+
+      toast.add({
+        title: "Xoá thành công!",
+        description: "Đã xoá danh sách thành công.",
+        type: "success",
+      });
+    } catch (error: any) {
+      setLists(prevLists);
+
+      toast.add({
+        title: "Xoá thất bại!",
+        description: "Xoá danh sách thất bại. " + error.message,
+        type: "error",
+      });
     }
   };
 
