@@ -206,6 +206,7 @@ export default function ListContainer({
   return (
     <div
       ref={listRef}
+      data-testid="list-container"
       className={`relative shrink-0 w-80 max-h-full flex flex-col bg-secondary/80 backdrop-blur-xl rounded-xl border-border/50 transition-all duration-200 ${
         isDragging
           ? "opacity-60 shadow-2xl scale-[0.98] ring-2 ring-primary/50"
@@ -225,6 +226,7 @@ export default function ListContainer({
 
       <div
         ref={dragHandleRef}
+        data-testid="list-drag-handle"
         tabIndex={0}
         role="button"
         aria-roledescription="sortable list"
@@ -234,6 +236,7 @@ export default function ListContainer({
       >
         {isEditing ? (
           <input
+            data-testid="list-title-input"
             autoFocus
             value={editTitle}
             onChange={(e) => setEditTitle(e.target.value)}
@@ -253,6 +256,7 @@ export default function ListContainer({
           />
         ) : (
           <h3
+            data-testid="list-title"
             onClick={() => setIsEditing(true)}
             className="font-semibold text-sm flex-1 px-2 py-1 rounded-md hover:bg-black/5 cursor-text"
             title="Nhấn để sửa tên"
@@ -262,6 +266,7 @@ export default function ListContainer({
         )}
 
         <Button
+          data-testid="delete-list-btn"
           variant="ghost"
           size="icon"
           onClick={() => onDelete(list.id)}
