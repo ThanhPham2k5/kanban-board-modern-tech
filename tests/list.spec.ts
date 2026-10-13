@@ -14,7 +14,7 @@ test.describe("test thêm list", () => {
 
       await deleteButton.click();
 
-      const successToast = page.getByText("Xoá thành công!");
+      const successToast = page.getByText("Xoá thành công!").last();
       await successToast.waitFor({ state: "visible" });
       await successToast.waitFor({ state: "hidden" });
     }
@@ -28,7 +28,9 @@ test.describe("test thêm list", () => {
       .getByRole("button", { name: "Thêm danh sách" });
     await addButton.click();
 
-    const successToast = page.getByText("Đã tạo danh sách mới thành công");
+    const successToast = page
+      .getByText("Đã tạo danh sách mới thành công")
+      .last();
     await expect(successToast).toBeVisible();
   });
 
@@ -40,7 +42,9 @@ test.describe("test thêm list", () => {
       .getByRole("button", { name: "Thêm danh sách" });
     await addButton.click();
 
-    const successToast = page.getByText("Đã tạo danh sách mới thành công");
+    const successToast = page
+      .getByText("Đã tạo danh sách mới thành công")
+      .last();
     await expect(successToast).toBeVisible();
   });
 });
@@ -57,7 +61,9 @@ test.describe("test sửa list", () => {
       .first();
     await addButton.click();
 
-    const successToast = page.getByText("Đã tạo danh sách mới thành công");
+    const successToast = page
+      .getByText("Đã tạo danh sách mới thành công")
+      .last();
     await successToast.waitFor({ state: "visible" });
     await successToast.waitFor({ state: "hidden" });
   });
@@ -69,7 +75,7 @@ test.describe("test sửa list", () => {
 
       await deleteButton.click();
 
-      const successToast = page.getByText("Xoá thành công!");
+      const successToast = page.getByText("Xoá thành công!").last();
       await successToast.waitFor({ state: "visible" });
       await successToast.waitFor({ state: "hidden" });
     }
@@ -84,7 +90,7 @@ test.describe("test sửa list", () => {
     await titleInput.fill("Test");
     await titleInput.press("Enter");
 
-    const successToast = page.getByText("Cập nhật thành công!");
+    const successToast = page.getByText("Cập nhật thành công!").last();
     await expect(successToast).toBeVisible();
     await expect(titleHeader).toHaveText("Test");
   });
@@ -98,9 +104,11 @@ test.describe("test sửa list", () => {
     await titleInput.fill("");
     await titleInput.press("Enter");
 
-    const errorToast = page.getByText(
-      "Cập nhật danh sách thất bại. Tên danh sách không được để trống",
-    );
+    const errorToast = page
+      .getByText(
+        "Cập nhật danh sách thất bại. Tên danh sách không được để trống",
+      )
+      .last();
     await expect(errorToast).toBeVisible();
   });
 
@@ -113,9 +121,11 @@ test.describe("test sửa list", () => {
     await titleInput.fill("Test ".repeat(20));
     await titleInput.press("Enter");
 
-    const errorToast = page.getByText(
-      "Cập nhật danh sách thất bại. Tên danh sách không vượt quá 50 ký tự",
-    );
+    const errorToast = page
+      .getByText(
+        "Cập nhật danh sách thất bại. Tên danh sách không vượt quá 50 ký tự",
+      )
+      .last();
     await expect(errorToast).toBeVisible();
   });
 
@@ -128,9 +138,11 @@ test.describe("test sửa list", () => {
     await titleInput.fill("<script>Hacking...</script>");
     await titleInput.press("Enter");
 
-    const errorToast = page.getByText(
-      "Cập nhật danh sách thất bại. Tên danh sách chứa ký tự không hợp lệ",
-    );
+    const errorToast = page
+      .getByText(
+        "Cập nhật danh sách thất bại. Tên danh sách chứa ký tự không hợp lệ",
+      )
+      .last();
     await expect(errorToast).toBeVisible();
   });
 });
@@ -147,7 +159,9 @@ test.describe("test xoá list", () => {
       .first();
     await addButton.click();
 
-    const successToast = page.getByText("Đã tạo danh sách mới thành công");
+    const successToast = page
+      .getByText("Đã tạo danh sách mới thành công")
+      .last();
     await successToast.waitFor({ state: "visible" });
     await successToast.waitFor({ state: "hidden" });
   });
@@ -171,7 +185,7 @@ test.describe("test xoá list", () => {
     page.once("dialog", (dialog) => dialog.accept());
     await deleteButton.click();
 
-    const successToast = page.getByText("Xoá thành công!");
+    const successToast = page.getByText("Xoá thành công!").last();
     await expect(successToast).toBeVisible();
   });
 
@@ -190,7 +204,7 @@ test.describe("test xoá list", () => {
     const finalNumber = await listContainers.count();
     expect(finalNumber).toEqual(initialNumber - 1);
 
-    const successToast = page.getByText("Xoá thành công!");
+    const successToast = page.getByText("Xoá thành công!").last();
     await expect(successToast).toBeVisible();
 
     const deletedList = page.getByText(deletedTitle as string, { exact: true });
@@ -209,7 +223,9 @@ test.describe("test sửa & xoá bằng bàn phím", () => {
       .first();
     await addButton.click();
 
-    const successToast = page.getByText("Đã tạo danh sách mới thành công");
+    const successToast = page
+      .getByText("Đã tạo danh sách mới thành công")
+      .last();
     await successToast.waitFor({ state: "visible" });
     await successToast.waitFor({ state: "hidden" });
   });
@@ -226,7 +242,7 @@ test.describe("test sửa & xoá bằng bàn phím", () => {
     await page.keyboard.type("Sửa bằng bàn phím");
     await page.keyboard.press("Enter");
 
-    const successToast = page.getByText("Cập nhật thành công!");
+    const successToast = page.getByText("Cập nhật thành công!").last();
     await expect(successToast).toBeVisible();
 
     const titleHeader = page.getByTestId("list-title").last();
@@ -238,7 +254,7 @@ test.describe("test sửa & xoá bằng bàn phím", () => {
       page.once("dialog", (dialog) => dialog.accept());
       await deleteButton.click();
 
-      const successToast = page.getByText("Xoá thành công!");
+      const successToast = page.getByText("Xoá thành công!").last();
       await successToast.waitFor({ state: "visible" });
       await successToast.waitFor({ state: "hidden" });
     }
@@ -260,7 +276,7 @@ test.describe("test sửa & xoá bằng bàn phím", () => {
     const finalNumber = await listContainers.count();
     expect(finalNumber).toEqual(initialNumber - 1);
 
-    const successToast = page.getByText("Xoá thành công!");
+    const successToast = page.getByText("Xoá thành công!").last();
     await expect(successToast).toBeVisible();
   });
 });
