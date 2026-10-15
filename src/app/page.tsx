@@ -2,6 +2,9 @@ import Header from "@/components/Header";
 import BoardView from "@/components/BoardView";
 import { getFullData } from "@/actions/checklist-actions";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function Home() {
   const lists = await getFullData();
   const cards = lists.flatMap((list) => list.cards);

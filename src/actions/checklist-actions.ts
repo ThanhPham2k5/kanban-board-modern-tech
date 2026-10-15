@@ -8,12 +8,24 @@ import {
   ListWithCards,
   UpdateChecklistItemInput,
 } from "@/lib/definitions";
-import { supabase } from "@/lib/supabase";
+// import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/server";
 
 export async function getFullData(): Promise<ListWithCards[]> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+    error: useError,
+  } = await supabase.auth.getUser();
+  if (useError || !user) {
+    return [];
+  }
+
   const { data, error } = await supabase
     .from("lists")
     .select("*,cards (*,checklists (*,items: checklistitems (*)))")
+    .eq("user_id", user.id)
     .order("order", { ascending: true })
     .order("order", { referencedTable: "cards", ascending: true })
     .order("order", { referencedTable: "cards.checklists", ascending: true })
@@ -33,6 +45,7 @@ export async function getFullData(): Promise<ListWithCards[]> {
 export async function createChecklist(
   input: CreateChecklistInput,
 ): Promise<ChecklistWithItems> {
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("checklists")
     .insert({
@@ -63,6 +76,7 @@ export async function updateChecklist(
     throw new Error("Tiêu đề không được để trống.");
   }
 
+  const supabase = await createClient();
   const { error } = await supabase
     .from("checklists")
     .update({ title: cleanTitle })
@@ -78,6 +92,7 @@ export async function updateChecklistOrder(
   id: string,
   newOrder: string,
 ): Promise<void> {
+  const supabase = await createClient();
   const { error } = await supabase
     .from("checklists")
     .update({ order: newOrder })
@@ -90,6 +105,7 @@ export async function updateChecklistOrder(
 }
 
 export async function deleteChecklist(id: string): Promise<void> {
+  const supabase = await createClient();
   const { error } = await supabase.from("checklists").delete().eq("id", id);
 
   if (error) {
@@ -106,6 +122,7 @@ export async function createChecklistItem(
     throw new Error("Nội dung công việc không được để trống.");
   }
 
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("checklistitems")
     .insert({
@@ -140,6 +157,7 @@ export async function updateChecklistItem(
     }
   }
 
+  const supabase = await createClient();
   const { error } = await supabase
     .from("checklistitems")
     .update(updates)
@@ -162,6 +180,7 @@ export async function updateChecklistItemOrder(
     payload.checklist_id = targetChecklistId;
   }
 
+  const supabase = await createClient();
   const { error } = await supabase
     .from("checklistitems")
     .update(payload)
@@ -174,6 +193,7 @@ export async function updateChecklistItemOrder(
 }
 
 export async function deleteChecklistItem(id: string): Promise<void> {
+  const supabase = await createClient();
   const { error } = await supabase.from("checklistitems").delete().eq("id", id);
 
   if (error) {
