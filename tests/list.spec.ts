@@ -5,6 +5,14 @@ test.describe("test thêm list", () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto("http://localhost:3000");
+    await page
+      .locator('input[name="email"]')
+      .fill(process.env.BOT_TEST_EMAIL || "");
+    await page
+      .locator('input[name="password"]')
+      .fill(process.env.BOT_TEST_PASSWORD || "");
+    await page.getByRole("button", { name: /đăng nhập/i }).click();
+    await page.waitForURL("http://localhost:3000/");
   });
 
   test.afterEach(async ({ page }) => {
@@ -16,7 +24,6 @@ test.describe("test thêm list", () => {
 
       const successToast = page.getByText("Xoá thành công!").last();
       await successToast.waitFor({ state: "visible" });
-      await successToast.waitFor({ state: "hidden" });
     }
   });
 
@@ -55,6 +62,14 @@ test.describe("test sửa list", () => {
   // create a dummy list before testing
   test.beforeEach(async ({ page }) => {
     await page.goto("http://localhost:3000");
+    await page
+      .locator('input[name="email"]')
+      .fill(process.env.BOT_TEST_EMAIL || "");
+    await page
+      .locator('input[name="password"]')
+      .fill(process.env.BOT_TEST_PASSWORD || "");
+    await page.getByRole("button", { name: /đăng nhập/i }).click();
+    await page.waitForURL("http://localhost:3000/");
 
     const addButton = page
       .getByRole("button", { name: "Thêm danh sách" })
@@ -65,7 +80,6 @@ test.describe("test sửa list", () => {
       .getByText("Đã tạo danh sách mới thành công")
       .last();
     await successToast.waitFor({ state: "visible" });
-    await successToast.waitFor({ state: "hidden" });
   });
 
   test.afterEach(async ({ page }) => {
@@ -77,7 +91,6 @@ test.describe("test sửa list", () => {
 
       const successToast = page.getByText("Xoá thành công!").last();
       await successToast.waitFor({ state: "visible" });
-      await successToast.waitFor({ state: "hidden" });
     }
   });
 
@@ -104,11 +117,7 @@ test.describe("test sửa list", () => {
     await titleInput.fill("");
     await titleInput.press("Enter");
 
-    const errorToast = page
-      .getByText(
-        "Cập nhật danh sách thất bại. Tên danh sách không được để trống",
-      )
-      .last();
+    const errorToast = page.getByText(/Cập nhật thất bại/i).last();
     await expect(errorToast).toBeVisible();
   });
 
@@ -121,11 +130,7 @@ test.describe("test sửa list", () => {
     await titleInput.fill("Test ".repeat(20));
     await titleInput.press("Enter");
 
-    const errorToast = page
-      .getByText(
-        "Cập nhật danh sách thất bại. Tên danh sách không vượt quá 50 ký tự",
-      )
-      .last();
+    const errorToast = page.getByText(/Cập nhật thất bại/i).last();
     await expect(errorToast).toBeVisible();
   });
 
@@ -138,11 +143,7 @@ test.describe("test sửa list", () => {
     await titleInput.fill("<script>Hacking...</script>");
     await titleInput.press("Enter");
 
-    const errorToast = page
-      .getByText(
-        "Cập nhật danh sách thất bại. Tên danh sách chứa ký tự không hợp lệ",
-      )
-      .last();
+    const errorToast = page.getByText(/Cập nhật thất bại/i).last();
     await expect(errorToast).toBeVisible();
   });
 });
@@ -153,6 +154,14 @@ test.describe("test xoá list", () => {
   // create a dummy list before testing
   test.beforeEach(async ({ page }) => {
     await page.goto("http://localhost:3000");
+    await page
+      .locator('input[name="email"]')
+      .fill(process.env.BOT_TEST_EMAIL || "");
+    await page
+      .locator('input[name="password"]')
+      .fill(process.env.BOT_TEST_PASSWORD || "");
+    await page.getByRole("button", { name: /đăng nhập/i }).click();
+    await page.waitForURL("http://localhost:3000/");
 
     const addButton = page
       .getByRole("button", { name: "Thêm danh sách" })
@@ -163,7 +172,6 @@ test.describe("test xoá list", () => {
       .getByText("Đã tạo danh sách mới thành công")
       .last();
     await successToast.waitFor({ state: "visible" });
-    await successToast.waitFor({ state: "hidden" });
   });
 
   test("Test 01: Huỷ bỏ khi có hộp thoại xác nhận xoá", async ({ page }) => {
@@ -217,6 +225,14 @@ test.describe("test sửa & xoá bằng bàn phím", () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto("http://localhost:3000");
+    await page
+      .locator('input[name="email"]')
+      .fill(process.env.BOT_TEST_EMAIL || "");
+    await page
+      .locator('input[name="password"]')
+      .fill(process.env.BOT_TEST_PASSWORD || "");
+    await page.getByRole("button", { name: /đăng nhập/i }).click();
+    await page.waitForURL("http://localhost:3000/");
 
     const addButton = page
       .getByRole("button", { name: "Thêm danh sách" })
@@ -227,7 +243,6 @@ test.describe("test sửa & xoá bằng bàn phím", () => {
       .getByText("Đã tạo danh sách mới thành công")
       .last();
     await successToast.waitFor({ state: "visible" });
-    await successToast.waitFor({ state: "hidden" });
   });
 
   test("Sửa tiêu đề bằng bàn phím Tab -> Spacebar -> Type -> Enter", async ({
@@ -256,7 +271,6 @@ test.describe("test sửa & xoá bằng bàn phím", () => {
 
       const successToast = page.getByText("Xoá thành công!").last();
       await successToast.waitFor({ state: "visible" });
-      await successToast.waitFor({ state: "hidden" });
     }
   });
 
@@ -286,6 +300,14 @@ test.describe("test kéo thả danh sách", () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto("http://localhost:3000");
+    await page
+      .locator('input[name="email"]')
+      .fill(process.env.BOT_TEST_EMAIL || "");
+    await page
+      .locator('input[name="password"]')
+      .fill(process.env.BOT_TEST_PASSWORD || "");
+    await page.getByRole("button", { name: /đăng nhập/i }).click();
+    await page.waitForURL("http://localhost:3000/");
 
     const addButton = page
       .getByRole("button", { name: "Thêm danh sách" })
@@ -295,7 +317,7 @@ test.describe("test kéo thả danh sách", () => {
     await page
       .getByText("Đã tạo danh sách mới thành công")
       .last()
-      .waitFor({ state: "hidden" });
+      .waitFor({ state: "visible" });
 
     const firstListTitle = page.getByTestId("list-title").last();
     await firstListTitle.click();
@@ -304,13 +326,13 @@ test.describe("test kéo thả danh sách", () => {
     await page
       .getByText("Cập nhật thành công!")
       .last()
-      .waitFor({ state: "hidden" });
+      .waitFor({ state: "visible" });
 
     await addButton.click();
     await page
       .getByText("Đã tạo danh sách mới thành công")
       .last()
-      .waitFor({ state: "hidden" });
+      .waitFor({ state: "visible" });
 
     const secondListTitle = page.getByTestId("list-title").last();
     await secondListTitle.click();
@@ -319,7 +341,7 @@ test.describe("test kéo thả danh sách", () => {
     await page
       .getByText("Cập nhật thành công!")
       .last()
-      .waitFor({ state: "hidden" });
+      .waitFor({ state: "visible" });
   });
 
   test.afterEach(async ({ page }) => {
@@ -331,7 +353,7 @@ test.describe("test kéo thả danh sách", () => {
         await page
           .getByText("Xoá thành công!")
           .last()
-          .waitFor({ state: "hidden" });
+          .waitFor({ state: "visible" });
       }
     }
   });

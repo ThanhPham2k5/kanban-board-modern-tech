@@ -50,7 +50,7 @@ export async function signup(formData: FormData) {
 
   const { email, password: validPassword } = validatedFields.data;
 
-  const { error } = await supabase.auth.signUp({
+  const { error, data } = await supabase.auth.signUp({
     email,
     password: validPassword,
   });
@@ -59,6 +59,11 @@ export async function signup(formData: FormData) {
     if (error.status === 422)
       return { error: "Email này đã được sử dụng hoặc không hợp lệ" };
     return { error: `Đăng ký thất bại: ${error.message}` };
+  }
+
+  // supabase auto log in after sign up successful => log out after sign up complete
+  if (data.user) {
+    await supabase.auth.signOut();
   }
 
   revalidatePath("/", "layout");
