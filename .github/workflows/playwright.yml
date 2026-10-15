@@ -1,40 +1,42 @@
-# name: Playwright Tests
+name: Playwright Tests
 
-# on:
-#   push:
-#     branches: []
-#   pull_request:
-#     branches: [main, master]
+on:
+  push:
+    branches: [feature/list-dnd]
+  pull_request:
+    branches: [main, master]
 
-# jobs:
-#   ci_workflows:
-#     timeout-minutes: 60
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v4
+jobs:
+  ci_workflows:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-#       - name: Setup Node.js
-#         uses: actions/setup-node@v4
-#         with:
-#           node-version: 22
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
 
-#       - name: Install dependencies
-#         run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-#       - name: Install Playwright Browsers
-#         run: npx playwright install --with-deps
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
 
-#       - name: Run Playwright tests
-#         env:
-#           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-#           NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
-#         run: npx playwright test
+      - name: Run Playwright tests
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+          BOT_TEST_EMAIL: ${{ secrets.BOT_TEST_EMAIL }}
+          BOT_TEST_PASSWORD: ${{ secrets.BOT_TEST_PASSWORD }}
+        run: npx playwright test
 
-#       - name: Upload Playwright Report & Test Results
-#         uses: actions/upload-artifact@v4
-#         if: ${{ !cancelled() }}
-#         with:
-#           name: playwright-all-reports
-#           path: ci-results/
-#           retention-days: 30
+      - name: Upload Playwright Report & Test Results
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-all-reports
+          path: ci-results/
+          retention-days: 30
