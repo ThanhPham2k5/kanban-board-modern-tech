@@ -3,7 +3,10 @@ import { Button } from "./ui/button";
 
 export default function BoardSkeleton() {
   return (
-    <div className="flex gap-4 flex-1 items-start overflow-x-auto p-4 md:p-6">
+    <div
+      data-testid="board-skeleton"
+      className="flex gap-4 flex-1 items-start overflow-x-auto p-4 md:p-6"
+    >
       {[1, 2, 3].map((i) => (
         <div
           key={i}

@@ -318,6 +318,7 @@ export default function BoardView({ initialLists }: BoardViewProps) {
         ))}
 
         <Button
+          data-testid="board-add-btn"
           onClick={addList}
           variant="ghost"
           className="w-fit justify-start text-muted-foreground hover:text-foreground cursor-pointer"

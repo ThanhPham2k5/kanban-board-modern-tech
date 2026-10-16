@@ -13,6 +13,12 @@ test.describe("test thêm list", () => {
       .fill(process.env.BOT_TEST_PASSWORD || "");
     await page.getByRole("button", { name: /đăng nhập/i }).click();
     await page.waitForURL("http://localhost:3000/");
+    await expect(page.getByTestId("board-skeleton")).toBeHidden({
+      timeout: 15_000,
+    });
+    await expect(page.getByTestId("board-add-btn")).toBeVisible({
+      timeout: 15_000,
+    });
   });
 
   test.afterEach(async ({ page }) => {
@@ -70,6 +76,12 @@ test.describe("test sửa list", () => {
       .fill(process.env.BOT_TEST_PASSWORD || "");
     await page.getByRole("button", { name: /đăng nhập/i }).click();
     await page.waitForURL("http://localhost:3000/");
+    await expect(page.getByTestId("board-skeleton")).toBeHidden({
+      timeout: 15_000,
+    });
+    await expect(page.getByTestId("board-add-btn")).toBeVisible({
+      timeout: 15_000,
+    });
 
     const addButton = page
       .getByRole("button", { name: "Thêm danh sách" })
@@ -162,6 +174,12 @@ test.describe("test xoá list", () => {
       .fill(process.env.BOT_TEST_PASSWORD || "");
     await page.getByRole("button", { name: /đăng nhập/i }).click();
     await page.waitForURL("http://localhost:3000/");
+    await expect(page.getByTestId("board-skeleton")).toBeHidden({
+      timeout: 15_000,
+    });
+    await expect(page.getByTestId("board-add-btn")).toBeVisible({
+      timeout: 15_000,
+    });
 
     const addButton = page
       .getByRole("button", { name: "Thêm danh sách" })
@@ -233,6 +251,12 @@ test.describe("test sửa & xoá bằng bàn phím", () => {
       .fill(process.env.BOT_TEST_PASSWORD || "");
     await page.getByRole("button", { name: /đăng nhập/i }).click();
     await page.waitForURL("http://localhost:3000/");
+    await expect(page.getByTestId("board-skeleton")).toBeHidden({
+      timeout: 15_000,
+    });
+    await expect(page.getByTestId("board-add-btn")).toBeVisible({
+      timeout: 15_000,
+    });
 
     const addButton = page
       .getByRole("button", { name: "Thêm danh sách" })
@@ -308,6 +332,12 @@ test.describe("test kéo thả danh sách", () => {
       .fill(process.env.BOT_TEST_PASSWORD || "");
     await page.getByRole("button", { name: /đăng nhập/i }).click();
     await page.waitForURL("http://localhost:3000/");
+    await expect(page.getByTestId("board-skeleton")).toBeHidden({
+      timeout: 15_000,
+    });
+    await expect(page.getByTestId("board-add-btn")).toBeVisible({
+      timeout: 15_000,
+    });
 
     const addButton = page
       .getByRole("button", { name: "Thêm danh sách" })
