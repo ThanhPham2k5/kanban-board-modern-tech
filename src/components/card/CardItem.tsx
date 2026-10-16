@@ -264,6 +264,7 @@ export function CardItem({
                         if (e.key === "Enter") {
                           handleUpdateTitle();
                         } else if (e.key === "Escape") {
+                          e.stopPropagation();
                           setTitleInput(card.title);
                           setIsEditingTitle(false);
                         }
@@ -289,6 +290,7 @@ export function CardItem({
               <Button
                 variant="destructive"
                 size="sm"
+                aria-label="Xóa thẻ"
                 onClick={handleDeleteCard}
                 className="gap-1.5 shrink-0"
               >

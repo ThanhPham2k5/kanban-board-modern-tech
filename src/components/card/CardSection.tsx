@@ -277,6 +277,7 @@ export function CardSection({
           <Button
             variant="outline"
             size="sm"
+            aria-label="Thêm thẻ mới"
             onClick={() => setIsAddingCard(true)}
             className="w-full justify-start gap-1.5 focus-visible:ring-0 focus-visible:ring-offset-0"
           >
