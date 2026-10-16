@@ -217,6 +217,7 @@ export function ChecklistItemRow({
       <Button
         variant="ghost"
         size="icon"
+        aria-label="Xóa item"
         className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive hover:bg-transparent shrink-0"
         onClick={handleDelete}
       >
