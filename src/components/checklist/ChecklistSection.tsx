@@ -5,7 +5,6 @@ import {
   updateChecklistItemOrder,
   updateChecklistOrder,
 } from "@/actions/checklist-actions";
-} from "@/actions/checklist-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ChecklistItem, ChecklistWithItems } from "@/lib/definitions";
@@ -15,7 +14,7 @@ import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/ad
 import { generateKeyBetween } from "fractional-indexing";
 import { Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { ChecklistCard } from "./checklist-card";
+import { ChecklistCard } from "./ChecklistCard";
 
 interface ChecklistSectionProps {
   cardId: string;
@@ -266,6 +265,20 @@ export function ChecklistSection({
 
   return (
     <div className="space-y-4">
+      {/* 1. Đưa danh sách các checklist lên trên */}
+      <div className="flex flex-col gap-4">
+        {checklists.map((cl) => (
+          <ChecklistCard
+            key={cl.id}
+            checklist={cl}
+            onChecklistDeleted={handleChecklistDeleted}
+            onChecklistUpdated={handleChecklistUpdated}
+            onChecklistDeleteFailed={handleChecklistDeleteFailed}
+          />
+        ))}
+      </div>
+
+      {/* 2. Đưa nút thêm hoặc form nhập liệu xuống dưới cùng */}
       <div>
         {isAddingGroup ? (
           <form onSubmit={handleCreateGroup} className="flex gap-2">
@@ -292,30 +305,12 @@ export function ChecklistSection({
             variant="outline"
             size="sm"
             onClick={() => setIsAddingGroup(true)}
-            className="gap-1.5"
+            className="w-full justify-start gap-1.5 focus-visible:ring-0 focus-visible:ring-offset-0"
           >
             <Plus className="h-4 w-4" /> Thêm danh sách công việc
           </Button>
         )}
       </div>
-
-      {checklists.length === 0 ? (
-        <div className="text-center py-6 border border-dashed rounded-lg text-sm text-muted-foreground">
-          Chưa có danh sách công việc nào cho thẻ này.
-        </div>
-      ) : (
-        <div className="flex flex-col gap-4">
-          {checklists.map((cl) => (
-            <ChecklistCard
-              key={cl.id}
-              checklist={cl}
-              onChecklistDeleted={handleChecklistDeleted}
-              onChecklistUpdated={handleChecklistUpdated}
-              onChecklistDeleteFailed={handleChecklistDeleteFailed}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 }

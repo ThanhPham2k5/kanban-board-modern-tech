@@ -3,32 +3,10 @@
 import {
   CardWithChecklists,
   CreateCardInput,
-  ListWithCards,
   UpdateCardInput,
 } from "@/lib/definitions";
 import { createClient } from "@/lib/server";
 // import { supabase } from "@/lib/supabase";
-
-export async function getFullData(): Promise<ListWithCards[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("lists")
-    .select("*,cards (*,checklists (*,items: checklistitems (*)))")
-    .order("order", { ascending: true })
-    .order("order", { referencedTable: "cards", ascending: true })
-    .order("order", { referencedTable: "cards.checklists", ascending: true })
-    .order("order", {
-      referencedTable: "cards.checklists.checklistitems",
-      ascending: true,
-    });
-
-  if (error) {
-    console.error("Lỗi tải dữ liệu:", error.message);
-    return [];
-  }
-
-  return data ?? [];
-}
 
 export async function createCard(
   input: CreateCardInput,

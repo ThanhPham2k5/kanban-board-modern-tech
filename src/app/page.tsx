@@ -11,7 +11,7 @@ export default async function BoardTestPage() {
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
       <main className="flex-1 flex flex-col overflow-hidden bg-muted/40 dark:bg-background">
-        <BoardView initialLists={lists || []}} />
+        <BoardView initialLists={lists} />
       </main>
     </div>
   );

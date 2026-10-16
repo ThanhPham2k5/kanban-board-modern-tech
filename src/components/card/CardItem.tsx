@@ -25,7 +25,7 @@ import {
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 import { GripVertical, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { ChecklistSection } from "../checklist/checklist-section";
+import { ChecklistSection } from "../checklist/ChecklistSection";
 
 interface CardItemProps {
   card: CardWithChecklists;

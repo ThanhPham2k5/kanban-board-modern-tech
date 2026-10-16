@@ -1,12 +1,12 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
-import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
+import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { generateKeyBetween } from "fractional-indexing";
+import { Plus } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import ListContainer from "./ListContainer";
 import { Button } from "./ui/button";
-import { Plus } from "lucide-react";
 import { toast } from "./ui/toast";
 
 import {
@@ -15,28 +15,57 @@ import {
   updateListAction,
   updateListOrderAction,
 } from "@/actions/list-actions";
-import { updateCardOrderAction } from "@/actions/card-actions";
-import { CardWithChecklists, List } from "@/lib/definitions";
+import { CardWithChecklists, ListWithCards } from "@/lib/definitions";
 
 interface BoardViewProps {
-  initialLists: List[];
-  initialCards: CardWithChecklists[];
+  initialLists: ListWithCards[];
 }
 
-export default function BoardView({
-  initialLists,
-  initialCards,
-}: BoardViewProps) {
-  const [lists, setLists] = useState(() =>
-    initialLists.sort((a, b) =>
-      a.order < b.order ? -1 : a.order > b.order ? 1 : 0,
-    ),
-  );
-
-  const [cards, setCards] = useState<CardWithChecklists[]>(initialCards);
-
+export default function BoardView({ initialLists }: BoardViewProps) {
+  const [lists, setLists] = useState<ListWithCards[]>(initialLists);
   const listRef = useRef(lists);
-  const cardsRef = useRef(cards);
+
+  function handleListChange(listId: string, updatedList: ListWithCards) {
+    setLists((prevLists) =>
+      prevLists.map((list) => (list.id === listId ? updatedList : list)),
+    );
+  }
+
+  function handleCardMoveAcrossLists(
+    sourceCardId: string,
+    targetListId: string,
+    newOrder: string,
+    targetIndex: number,
+  ) {
+    setLists((prevLists) => {
+      let movedCard: CardWithChecklists | null = null;
+
+      const listsWithoutCard = prevLists.map((list) => {
+        const found = list.cards.find((c) => c.id === sourceCardId);
+        if (found) {
+          movedCard = { ...found, list_id: targetListId, order: newOrder };
+          return {
+            ...list,
+            cards: list.cards.filter((c) => c.id !== sourceCardId),
+          };
+        }
+        return list;
+      });
+
+      if (!movedCard) return prevLists;
+
+      return listsWithoutCard.map((list) => {
+        if (list.id === targetListId) {
+          const newCards = [...list.cards];
+
+          newCards.splice(targetIndex, 0, movedCard!);
+
+          return { ...list, cards: newCards };
+        }
+        return list;
+      });
+    });
+  }
 
   // auto scroll to the end of lists after creating a new list
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -55,21 +84,18 @@ export default function BoardView({
     listRef.current = lists;
   }, [lists]);
 
-  useEffect(() => {
-    cardsRef.current = cards;
-  }, [cards]);
-
-  useEffect(() => {
-    setLists(initialLists);
-    setCards(initialCards);
-  }, [initialLists, initialCards]);
-
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const addList = async () => {
     const lastList = lists[lists.length - 1];
     const newOrder = generateKeyBetween(lastList?.order || null, null);
     const tempId = crypto.randomUUID();
 
-    const newList = { id: tempId, title: "Danh sách mới", order: newOrder };
+    const newList = {
+      id: tempId,
+      title: "Danh sách mới",
+      order: newOrder,
+      cards: [],
+    };
     setLists([...lists, newList]);
 
     try {
@@ -87,6 +113,7 @@ export default function BoardView({
         description: "Đã tạo danh sách mới thành công.",
         type: "success",
       });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       setLists((prev) => prev.filter((list) => list.id !== tempId));
 
@@ -139,6 +166,7 @@ export default function BoardView({
         description: "Đã cập nhật danh sách thành công.",
         type: "success",
       });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       setLists((prevLists) =>
         prevLists.map((list) =>
@@ -180,6 +208,7 @@ export default function BoardView({
         description: "Đã xoá danh sách thành công.",
         type: "success",
       });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       setLists(prevLists);
 
@@ -264,78 +293,6 @@ export default function BoardView({
           );
           updateListOrderAction(draggedId, newOrderString).catch(console.error);
         }
-
-        if (source.data.type === "card") {
-          const draggedCardId = source.data.id as string;
-          let targetListId = source.data.listId as string;
-          let newOrder: string | null = null;
-
-          if (destination.data.type === "card") {
-            targetListId = destination.data.listId as string;
-            const targetCardId = destination.data.id as string;
-            const edge = extractClosestEdge(destination.data);
-
-            const targetListCards = cardsRef.current
-              .filter((c) => c.list_id === targetListId)
-              .sort((a, b) => (a.order < b.order ? -1 : 1));
-            const targetIndex = targetListCards.findIndex(
-              (c) => c.id === targetCardId,
-            );
-
-            const prevOrder =
-              edge === "top"
-                ? targetListCards[targetIndex - 1]?.order || null
-                : targetListCards[targetIndex].order;
-            const nextOrder =
-              edge === "top"
-                ? targetListCards[targetIndex].order
-                : targetListCards[targetIndex + 1]?.order || null;
-
-            const draggedCard = cardsRef.current.find(
-              (c) => c.id === draggedCardId,
-            );
-            if (
-              prevOrder !== draggedCard?.order &&
-              nextOrder !== draggedCard?.order
-            ) {
-              newOrder = generateKeyBetween(prevOrder, nextOrder);
-            }
-          } else if (destination.data.type === "list") {
-            targetListId = destination.data.id as string;
-            const targetListCards = cardsRef.current
-              .filter((c) => c.list_id === targetListId)
-              .sort((a, b) => (a.order < b.order ? -1 : 1));
-
-            if (targetListCards.length === 0) {
-              newOrder = generateKeyBetween(null, null);
-            } else {
-              const lastCard = targetListCards[targetListCards.length - 1];
-              newOrder = generateKeyBetween(lastCard.order, null);
-            }
-          }
-
-          if (newOrder || targetListId !== source.data.listId) {
-            const draggedCard = cardsRef.current.find(
-              (c) => c.id === draggedCardId,
-            );
-            const finalOrder = newOrder || draggedCard?.order || "a0";
-
-            setCards((prev) => {
-              const updated = prev.map((c) =>
-                c.id === draggedCardId
-                  ? { ...c, list_id: targetListId, order: finalOrder }
-                  : c,
-              );
-              return updated.sort((a, b) => (a.order < b.order ? -1 : 1));
-            });
-
-            updateCardOrderAction(
-              draggedCardId,
-              targetListId,
-              finalOrder,
-            ).catch(console.error);
-          }
-        }
       },
     });
 
@@ -352,11 +309,11 @@ export default function BoardView({
           <ListContainer
             key={list.id}
             list={list}
-            cards={cards.filter((card) => card.list_id === list.id)}
-            setCards={setCards}
             onUpdateTitle={updateList}
             onDelete={deleteList}
             onMoveList={moveListKeyBoard}
+            onChange={(updatedList) => handleListChange(list.id, updatedList)}
+            handleCardMoveAcrossLists={handleCardMoveAcrossLists}
           />
         ))}
 

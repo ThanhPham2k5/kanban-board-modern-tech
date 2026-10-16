@@ -22,7 +22,7 @@ import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/el
 import { generateKeyBetween } from "fractional-indexing";
 import { GripVertical, Plus, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { ChecklistItemRow } from "./checklist-item-row";
+import { ChecklistItemRow } from "./ChecklistItemRow";
 
 interface ChecklistCardProps {
   checklist: ChecklistWithItems;

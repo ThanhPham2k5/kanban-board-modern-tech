@@ -1,45 +1,41 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import {
-  draggable,
-  dropTargetForElements,
-} from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { Button } from "@/components/ui/button";
+import { CardWithChecklists, ListWithCards } from "@/lib/definitions";
 import {
   attachClosestEdge,
   Edge,
   extractClosestEdge,
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
-import { Button } from "@/components/ui/button";
-import { CardWithChecklists, ChecklistWithItems } from "@/lib/definitions";
-import { Plus, Trash2, X } from "lucide-react";
-import { generateKeyBetween } from "fractional-indexing";
-import CardModal from "./CardModal";
-import CardItem from "./CardItem";
 import {
-  addCardAction,
-  updateCardTitleAction,
-  updateCardDescriptionAction,
-  toggleCardCompleteAction,
-  deleteCardAction,
-} from "@/actions/card-actions";
+  draggable,
+  dropTargetForElements,
+} from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { Trash2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { CardSection } from "./card/CardSection";
 
 interface ListProps {
-  list: { id: string; title: string; order: string };
-  cards?: CardWithChecklists[];
-  setCards: React.Dispatch<React.SetStateAction<CardWithChecklists[]>>;
+  list: ListWithCards;
   onUpdateTitle: (id: string, newTitle: string) => void;
   onDelete: (id: string) => void;
   onMoveList?: (id: string, direction: "left" | "right") => void;
+  onChange: (updatedList: ListWithCards) => void;
+  handleCardMoveAcrossLists: (
+    sourceCardId: string,
+    targetListId: string,
+    newOrder: string,
+    targetIndex: number,
+  ) => void;
 }
 
 export default function ListContainer({
   list,
-  cards = [],
-  setCards,
   onUpdateTitle,
   onDelete,
   onMoveList,
+  onChange,
+  handleCardMoveAcrossLists,
 }: ListProps) {
   const listRef = useRef<HTMLDivElement>(null);
   const dragHandleRef = useRef<HTMLDivElement>(null);
@@ -48,14 +44,6 @@ export default function ListContainer({
   const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(list.title);
-
-  const [isAddingCard, setIsAddingCard] = useState(false);
-  const [newCardTitle, setNewCardTitle] = useState("");
-
-  // 3. DÙNG CardType CHO MODAL
-  const [selectedCard, setSelectedCard] = useState<CardWithChecklists | null>(
-    null,
-  );
 
   useEffect(() => {
     const li = listRef.current;
@@ -70,8 +58,14 @@ export default function ListContainer({
           { input, element, allowedEdges: ["left", "right"] },
         );
       },
-      onDragEnter: (args) => setClosestEdge(extractClosestEdge(args.self.data)),
-      onDrag: (args) => setClosestEdge(extractClosestEdge(args.self.data)),
+      onDragEnter: (args) => {
+        if (args.source.data.type === "list")
+          setClosestEdge(extractClosestEdge(args.self.data));
+      },
+      onDrag: (args) => {
+        if (args.source.data.type === "list")
+          setClosestEdge(extractClosestEdge(args.self.data));
+      },
       onDragLeave: () => setClosestEdge(null),
       onDrop: () => setClosestEdge(null),
     });
@@ -108,99 +102,8 @@ export default function ListContainer({
     }
   };
 
-  const handleAddCardSubmit = async () => {
-    if (!newCardTitle.trim()) return;
-    const title = newCardTitle.trim();
-
-    const sortedCards = [...cards].sort((a, b) => (a.order < b.order ? -1 : 1));
-    const lastCard = sortedCards[sortedCards.length - 1];
-    const newOrder = generateKeyBetween(lastCard ? lastCard.order : null, null);
-
-    const tempId = crypto.randomUUID();
-    const tempCard: CardWithChecklists = {
-      id: tempId,
-      title,
-      list_id: list.id,
-      order: newOrder,
-      is_completed: false,
-      description: "",
-      checklists: [],
-    };
-
-    setCards((prev) => [...prev, tempCard]);
-    setNewCardTitle("");
-    setIsAddingCard(false);
-
-    try {
-      const savedCard = await addCardAction(list.id, title, newOrder);
-      setCards((prev) =>
-        prev.map((c) => (c.id === tempId ? { ...c, id: savedCard.id } : c)),
-      );
-    } catch (error) {
-      setCards((prev) => prev.filter((c) => c.id !== tempId));
-      console.error("Lỗi khi thêm card:", error);
-    }
-  };
-
-  const toggleCardComplete = async (id: string, currentStatus: boolean) => {
-    const newStatus = !currentStatus;
-    setCards((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, is_completed: newStatus } : c)),
-    );
-    if (selectedCard?.id === id) {
-      setSelectedCard((prev) =>
-        prev ? { ...prev, is_completed: newStatus } : null,
-      );
-    }
-    await toggleCardCompleteAction(id, newStatus).catch(console.error);
-  };
-
-  const updateCardTitle = async (id: string, newTitle: string) => {
-    setCards((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, title: newTitle } : c)),
-    );
-    if (selectedCard?.id === id) {
-      setSelectedCard((prev) => (prev ? { ...prev, title: newTitle } : null));
-    }
-    await updateCardTitleAction(id, newTitle).catch(console.error);
-  };
-
-  const updateCardDescription = async (id: string, newDesc: string) => {
-    setCards((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, description: newDesc } : c)),
-    );
-    if (selectedCard?.id === id) {
-      setSelectedCard((prev) =>
-        prev ? { ...prev, description: newDesc } : null,
-      );
-    }
-    await updateCardDescriptionAction(id, newDesc).catch(console.error);
-  };
-
-  const deleteCard = async (id: string) => {
-    if (confirm("Bạn có chắc muốn xoá thẻ này?")) {
-      setCards((prev) => prev.filter((c) => c.id !== id));
-      setSelectedCard(null);
-      await deleteCardAction(id).catch(console.error);
-    }
-  };
-
-  function handleChecklistsChange(
-    cardId: string,
-    updatedChecklists: ChecklistWithItems[],
-  ) {
-    setCards((prevCards) => {
-      const newCards = prevCards.map((card) =>
-        card.id === cardId ? { ...card, checklists: updatedChecklists } : card,
-      );
-
-      if (selectedCard && selectedCard.id === cardId) {
-        const updatedCard = newCards.find((c) => c.id === cardId) || null;
-        setSelectedCard(updatedCard);
-      }
-
-      return newCards;
-    });
+  function handleCardsChange(updatedCards: CardWithChecklists[]) {
+    onChange({ ...list, cards: updatedCards });
   }
 
   return (
@@ -277,73 +180,13 @@ export default function ListContainer({
       </div>
 
       <div className="flex-1 overflow-y-auto px-3 py-1 flex flex-col gap-2 min-h-[10px]">
-        {cards.map((card) => (
-          <CardItem
-            key={card.id}
-            card={card}
-            onOpenCard={(c) => setSelectedCard(c)}
-            onToggleComplete={toggleCardComplete}
-          />
-        ))}
-      </div>
-
-      <div className="p-2 pt-1">
-        {isAddingCard ? (
-          <div className="flex flex-col gap-2 bg-background p-2 rounded-md border shadow-sm">
-            <textarea
-              autoFocus
-              value={newCardTitle}
-              onChange={(e) => setNewCardTitle(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleAddCardSubmit();
-                }
-              }}
-              placeholder="Nhập tiêu đề thẻ..."
-              className="w-full text-sm resize-none outline-none bg-transparent"
-              rows={2}
-            />
-            <div className="flex items-center gap-1">
-              <Button size="sm" onClick={handleAddCardSubmit}>
-                Thêm
-              </Button>
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={() => setIsAddingCard(false)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <Button
-            variant="ghost"
-            onClick={() => setIsAddingCard(true)}
-            className="w-full justify-start text-muted-foreground hover:text-foreground cursor-pointer"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Thêm thẻ
-          </Button>
-        )}
-      </div>
-
-      {selectedCard && (
-        <CardModal
-          card={selectedCard}
-          listTitle={list.title}
-          isOpen={!!selectedCard}
-          onClose={() => setSelectedCard(null)}
-          onToggleComplete={toggleCardComplete}
-          onDeleteCard={deleteCard}
-          onUpdateDescription={updateCardDescription}
-          onUpdateTitle={updateCardTitle}
-          onChange={(newChecklists) =>
-            handleChecklistsChange(selectedCard.id, newChecklists)
-          }
+        <CardSection
+          listId={list.id}
+          cards={list.cards}
+          onChange={handleCardsChange}
+          onCardMoveAcrossLists={handleCardMoveAcrossLists}
         />
-      )}
+      </div>
     </div>
   );
 }
