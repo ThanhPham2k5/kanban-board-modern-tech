@@ -1,0 +1,11 @@
+node_modules
+npm-debug.log
+README.md
+.next
+.git
+.gitignore
+.env*.local
+playwright-report/
+test-results/
+tests/
+ci-results/

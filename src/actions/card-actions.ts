@@ -6,9 +6,11 @@ import {
   ListWithCards,
   UpdateCardInput,
 } from "@/lib/definitions";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/server";
+// import { supabase } from "@/lib/supabase";
 
 export async function getFullData(): Promise<ListWithCards[]> {
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("lists")
     .select("*,cards (*,checklists (*,items: checklistitems (*)))")
@@ -31,6 +33,7 @@ export async function getFullData(): Promise<ListWithCards[]> {
 export async function createCard(
   input: CreateCardInput,
 ): Promise<CardWithChecklists> {
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("cards")
     .insert({
@@ -58,6 +61,7 @@ export async function updateCard(
   cardId: string,
   updates: UpdateCardInput,
 ): Promise<void> {
+  const supabase = await createClient();
   if (
     updates.title === undefined &&
     updates.is_completed === undefined &&
@@ -91,6 +95,7 @@ export async function updateCardOrder(
   newOrder: string,
   targetListId?: string,
 ): Promise<void> {
+  const supabase = await createClient();
   const payload: { order: string; list_id?: string } = { order: newOrder };
 
   if (targetListId) {
@@ -109,6 +114,7 @@ export async function updateCardOrder(
 }
 
 export async function deleteCard(cardId: string): Promise<void> {
+  const supabase = await createClient();
   const { error } = await supabase.from("cards").delete().eq("id", cardId);
 
   if (error) {
