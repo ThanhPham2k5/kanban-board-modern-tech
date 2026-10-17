@@ -29,6 +29,12 @@ interface ChecklistCardProps {
   onChecklistDeleted: (checklistId: string) => void;
   onChecklistUpdated: (updatedChecklist: ChecklistWithItems) => void;
   onChecklistDeleteFailed: (restoredChecklist: ChecklistWithItems) => void;
+  onMove: (direction: "up" | "down") => void;
+  onMoveItem: (
+    itemId: string,
+    direction: "up" | "down" | "left" | "right",
+  ) => void;
+  isFocused: string | null;
 }
 
 export function ChecklistCard({
@@ -36,6 +42,9 @@ export function ChecklistCard({
   onChecklistDeleted,
   onChecklistUpdated,
   onChecklistDeleteFailed,
+  onMove,
+  onMoveItem,
+  isFocused,
 }: ChecklistCardProps) {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleValue, setTitleValue] = useState(checklist.title);
@@ -270,6 +279,15 @@ export function ChecklistCard({
       <div className="flex items-center justify-between gap-2.5 py-1">
         <button
           ref={dragHandleRef}
+          onKeyDown={(e) => {
+            if (e.altKey && e.key === "ArrowUp") {
+              e.preventDefault();
+              onMove("up");
+            } else if (e.altKey && e.key === "ArrowDown") {
+              e.preventDefault();
+              onMove("down");
+            }
+          }}
           type="button"
           aria-label="Kéo để sắp xếp danh sách"
           className="cursor-grab active:cursor-grabbing text-muted-foreground/60 hover:text-foreground p-1 rounded-sm hover:bg-muted/70 transition-colors shrink-0"
@@ -325,6 +343,8 @@ export function ChecklistCard({
             onItemUpdated={handleItemUpdated}
             onItemDeleted={handleItemDeleted}
             onItemDeleteFailed={handleItemDeleteFailed}
+            onMoveItem={onMoveItem}
+            isFocused={isFocused}
           />
         ))}
       </div>

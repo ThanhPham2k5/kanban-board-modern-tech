@@ -29,6 +29,7 @@ export function ChecklistSection({
 }: ChecklistSectionProps) {
   const [isAddingGroup, setIsAddingGroup] = useState(false);
   const [newTitle, setNewTitle] = useState("");
+  const [focusedItemId, setFocusedItemId] = useState<string | null>(null);
 
   const checklistsRef = useRef(checklists);
   useEffect(() => {
@@ -199,6 +200,144 @@ export function ChecklistSection({
     });
   }, [onChange]);
 
+  async function handleMoveChecklist(
+    checklistId: string,
+    direction: "up" | "down",
+  ) {
+    const currentChecklists = checklistsRef.current;
+    const index = currentChecklists.findIndex((c) => c.id === checklistId);
+    if (index === -1) return;
+
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+
+    if (targetIndex < 0 || targetIndex >= currentChecklists.length) return;
+
+    const newChecklists = [...currentChecklists];
+    const [movedItem] = newChecklists.splice(index, 1);
+    newChecklists.splice(targetIndex, 0, movedItem);
+
+    const prevChecklist = newChecklists[targetIndex - 1];
+    const nextChecklist = newChecklists[targetIndex + 1];
+    const newOrder = generateKeyBetween(
+      prevChecklist?.order ?? null,
+      nextChecklist?.order ?? null,
+    );
+
+    const updatedChecklist = { ...movedItem, order: newOrder };
+    newChecklists[targetIndex] = updatedChecklist;
+
+    onChange(newChecklists);
+
+    try {
+      await updateChecklistOrder(checklistId, newOrder);
+    } catch {
+      console.error("Di chuyển checklist bằng bàn phím thất bại");
+      onChange(currentChecklists);
+    }
+  }
+
+  async function handleMoveChecklistItem(
+    itemId: string,
+    sourceChecklistId: string,
+    direction: "up" | "down" | "left" | "right",
+  ) {
+    const currentChecklists = checklistsRef.current;
+
+    const sourceChecklistIndex = currentChecklists.findIndex(
+      (c) => c.id === sourceChecklistId,
+    );
+    if (sourceChecklistIndex === -1) return;
+    const sourceChecklist = currentChecklists[sourceChecklistIndex];
+
+    const itemIndex = sourceChecklist.items.findIndex((it) => it.id === itemId);
+    if (itemIndex === -1) return;
+    const itemToMove = sourceChecklist.items[itemIndex];
+
+    let targetChecklistId = sourceChecklistId;
+    let targetItems: ChecklistItem[] = [];
+    let insertIndex = 0;
+
+    if (direction === "up" || direction === "down") {
+      targetItems = [...sourceChecklist.items];
+      const targetItemIndex =
+        direction === "up" ? itemIndex - 1 : itemIndex + 1;
+
+      if (targetItemIndex < 0 || targetItemIndex >= targetItems.length) return;
+
+      targetItems.splice(itemIndex, 1);
+      targetItems.splice(targetItemIndex, 0, itemToMove);
+      insertIndex = targetItemIndex;
+    } else {
+      const targetChecklistIndex =
+        direction === "left"
+          ? sourceChecklistIndex - 1
+          : sourceChecklistIndex + 1;
+
+      if (
+        targetChecklistIndex < 0 ||
+        targetChecklistIndex >= currentChecklists.length
+      ) {
+        return;
+      }
+
+      const targetChecklist = currentChecklists[targetChecklistIndex];
+      targetChecklistId = targetChecklist.id;
+
+      insertIndex = 0;
+      targetItems = [itemToMove, ...targetChecklist.items];
+    }
+
+    const prevItem = targetItems[insertIndex - 1];
+    const nextItem = targetItems[insertIndex + 1];
+    const newOrder = generateKeyBetween(
+      prevItem?.order ?? null,
+      nextItem?.order ?? null,
+    );
+
+    const updatedItem: ChecklistItem = {
+      ...itemToMove,
+      order: newOrder,
+      checklist_id: targetChecklistId,
+    };
+
+    const finalTargetItems = [...targetItems];
+    finalTargetItems[insertIndex] = updatedItem;
+
+    let updatedChecklists: ChecklistWithItems[];
+
+    if (sourceChecklistId === targetChecklistId) {
+      updatedChecklists = currentChecklists.map((c) =>
+        c.id === sourceChecklistId ? { ...c, items: finalTargetItems } : c,
+      );
+    } else {
+      updatedChecklists = currentChecklists.map((c) => {
+        if (c.id === sourceChecklistId) {
+          return {
+            ...c,
+            items: c.items.filter((it) => it.id !== itemId),
+          };
+        }
+        if (c.id === targetChecklistId) {
+          return {
+            ...c,
+            items: finalTargetItems,
+          };
+        }
+        return c;
+      });
+    }
+
+    setFocusedItemId(itemId);
+    onChange(updatedChecklists);
+
+    try {
+      await updateChecklistItemOrder(itemId, newOrder, targetChecklistId);
+    } catch {
+      console.error("Di chuyển checklist item bằng bàn phím thất bại");
+      onChange(currentChecklists);
+    }
+  }
+
   async function handleCreateGroup(e: React.FormEvent) {
     e.preventDefault();
     const title = newTitle.trim();
@@ -273,6 +412,14 @@ export function ChecklistSection({
             onChecklistDeleted={handleChecklistDeleted}
             onChecklistUpdated={handleChecklistUpdated}
             onChecklistDeleteFailed={handleChecklistDeleteFailed}
+            onMove={(direction: "up" | "down") =>
+              handleMoveChecklist(cl.id, direction)
+            }
+            onMoveItem={(
+              itemId: string,
+              direction: "up" | "down" | "left" | "right",
+            ) => handleMoveChecklistItem(itemId, cl.id, direction)}
+            isFocused={focusedItemId}
           />
         ))}
       </div>
