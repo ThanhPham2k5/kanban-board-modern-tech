@@ -26,6 +26,11 @@ interface ChecklistItemRowProps {
   onItemUpdated: (updatedItem: ChecklistItem) => void;
   onItemDeleted: (itemId: string) => void;
   onItemDeleteFailed: (restoredItem: ChecklistItem) => void;
+  onMoveItem: (
+    itemId: string,
+    direction: "up" | "down" | "left" | "right",
+  ) => void;
+  isFocused: string | null;
 }
 
 export function ChecklistItemRow({
@@ -33,6 +38,8 @@ export function ChecklistItemRow({
   onItemUpdated,
   onItemDeleted,
   onItemDeleteFailed,
+  onMoveItem,
+  isFocused,
 }: ChecklistItemRowProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [contentValue, setContentValue] = useState(item.content);
@@ -41,6 +48,14 @@ export function ChecklistItemRow({
   const handleRef = useRef<HTMLButtonElement | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
+
+  useEffect(() => {
+    if (isFocused === item.id && handleRef.current) {
+      if (document.activeElement !== handleRef.current) {
+        handleRef.current.focus();
+      }
+    }
+  }, [isFocused, item.id]);
 
   useEffect(() => {
     const el = ref.current;
@@ -175,9 +190,26 @@ export function ChecklistItemRow({
 
       <button
         ref={handleRef}
+        onKeyDown={(e) => {
+          if (e.altKey) {
+            if (e.key === "ArrowUp") {
+              e.preventDefault();
+              onMoveItem(item.id, "up");
+            } else if (e.key === "ArrowDown") {
+              e.preventDefault();
+              onMoveItem(item.id, "down");
+            } else if (e.key === "ArrowLeft") {
+              e.preventDefault();
+              onMoveItem(item.id, "left");
+            } else if (e.key === "ArrowRight") {
+              e.preventDefault();
+              onMoveItem(item.id, "right");
+            }
+          }
+        }}
         type="button"
         aria-label="Kéo để sắp xếp"
-        className="cursor-grab active:cursor-grabbing text-muted-foreground/50 hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity p-0.5"
+        className="cursor-grab active:cursor-grabbing text-muted-foreground/50 hover:text-foreground transition-colors p-0.5"
       >
         <GripVertical className="h-3.5 w-3.5" />
       </button>
@@ -218,7 +250,7 @@ export function ChecklistItemRow({
         variant="ghost"
         size="icon"
         aria-label="Xóa item"
-        className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive hover:bg-transparent shrink-0"
+        className="h-7 w-7 transition-colors text-muted-foreground hover:text-destructive hover:bg-transparent shrink-0"
         onClick={handleDelete}
       >
         <X className="h-4 w-4" />
