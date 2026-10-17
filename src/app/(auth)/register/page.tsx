@@ -26,6 +26,7 @@ function RegisterForm() {
         description: result.error,
         type: "error",
       });
+      router.push(`/register?message=Đăng ký thất bại: ${result.error}`);
     } else if (result?.success) {
       toast.add({
         title: "Đăng ký thành công!",
