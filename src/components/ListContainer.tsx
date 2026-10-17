@@ -27,6 +27,8 @@ interface ListProps {
     newOrder: string,
     targetIndex: number,
   ) => void;
+  onMoveAcrossLists: (cardId: string, direction: "left" | "right") => void;
+  isFocused: string | null;
 }
 
 export default function ListContainer({
@@ -36,6 +38,8 @@ export default function ListContainer({
   onMoveList,
   onChange,
   handleCardMoveAcrossLists,
+  onMoveAcrossLists,
+  isFocused,
 }: ListProps) {
   const listRef = useRef<HTMLDivElement>(null);
   const dragHandleRef = useRef<HTMLDivElement>(null);
@@ -185,6 +189,8 @@ export default function ListContainer({
           cards={list.cards}
           onChange={handleCardsChange}
           onCardMoveAcrossLists={handleCardMoveAcrossLists}
+          onMoveAcrossLists={onMoveAcrossLists}
+          isFocused={isFocused}
         />
       </div>
     </div>

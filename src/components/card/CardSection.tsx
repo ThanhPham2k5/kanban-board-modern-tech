@@ -25,6 +25,8 @@ interface CardSectionProps {
     newOrder: string,
     targetIndex: number,
   ) => void;
+  onMoveAcrossLists: (cardId: string, direction: "left" | "right") => void;
+  isFocused: string | null;
 }
 
 export function CardSection({
@@ -32,6 +34,8 @@ export function CardSection({
   cards,
   onChange,
   onCardMoveAcrossLists,
+  onMoveAcrossLists,
+  isFocused,
 }: CardSectionProps) {
   const [isAddingCard, setIsAddingCard] = useState(false);
   const [newTitle, setNewTitle] = useState("");
@@ -167,6 +171,41 @@ export function CardSection({
     });
   }, [onChange, listId, onCardMoveAcrossLists]);
 
+  async function handleMoveCardInside(
+    cardId: string,
+    direction: "up" | "down",
+  ) {
+    const currentCards = cardsRef.current;
+    const index = currentCards.findIndex((c) => c.id === cardId);
+    if (index === -1) return;
+
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= currentCards.length) return;
+
+    const newCards = [...currentCards];
+    const [movedCard] = newCards.splice(index, 1);
+    newCards.splice(targetIndex, 0, movedCard);
+
+    const prevCard = newCards[targetIndex - 1];
+    const nextCard = newCards[targetIndex + 1];
+    const newOrder = generateKeyBetween(
+      prevCard?.order ?? null,
+      nextCard?.order ?? null,
+    );
+
+    const updatedCard = { ...movedCard, order: newOrder };
+    newCards[targetIndex] = updatedCard;
+
+    onChange(newCards);
+
+    try {
+      await updateCardOrder(cardId, newOrder);
+    } catch {
+      console.error("Cập nhật vị trí card thất bại");
+      onChange(currentCards);
+    }
+  }
+
   async function handleCreateCard(e: React.FormEvent) {
     e.preventDefault();
     const title = newTitle.trim();
@@ -248,6 +287,11 @@ export function CardSection({
             onCardDeleted={handleCardDeleted}
             onCardUpdated={handleCardUpdated}
             onCardDeleteFailed={handleCardDeleteFailed}
+            onMove={(direction: "up" | "down") =>
+              handleMoveCardInside(card.id, direction)
+            }
+            onMoveAcrossLists={onMoveAcrossLists}
+            isFocused={isFocused}
           />
         ))}
       </div>
