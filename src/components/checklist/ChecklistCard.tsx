@@ -301,6 +301,7 @@ export function ChecklistCard({
         <Button
           variant="ghost"
           size="icon"
+          aria-label="Xóa checklist"
           className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-transparent shrink-0"
           onClick={handleDeleteChecklist}
         >

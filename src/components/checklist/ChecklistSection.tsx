@@ -265,7 +265,6 @@ export function ChecklistSection({
 
   return (
     <div className="space-y-4">
-      {/* 1. Đưa danh sách các checklist lên trên */}
       <div className="flex flex-col gap-4">
         {checklists.map((cl) => (
           <ChecklistCard
@@ -278,13 +277,12 @@ export function ChecklistSection({
         ))}
       </div>
 
-      {/* 2. Đưa nút thêm hoặc form nhập liệu xuống dưới cùng */}
       <div>
         {isAddingGroup ? (
           <form onSubmit={handleCreateGroup} className="flex gap-2">
             <Input
               autoFocus
-              placeholder="Nhập tên checklist (VD: Thiết kế UI, Review Code...)"
+              placeholder="Nhập tên checklist"
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
             />
