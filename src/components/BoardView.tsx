@@ -9,6 +9,7 @@ import ListContainer from "./ListContainer";
 import { Button } from "./ui/button";
 import { toast } from "./ui/toast";
 
+import { updateCardOrder } from "@/actions/card-actions";
 import {
   addListAction,
   deleteListAction,
@@ -22,6 +23,7 @@ interface BoardViewProps {
 }
 
 export default function BoardView({ initialLists }: BoardViewProps) {
+  const [focusedCardId, setFocusedCardId] = useState<string | null>(null);
   const [lists, setLists] = useState<ListWithCards[]>(initialLists);
   const listRef = useRef(lists);
 
@@ -65,6 +67,67 @@ export default function BoardView({ initialLists }: BoardViewProps) {
         return list;
       });
     });
+  }
+
+  async function handleMoveCardAcrossLists(
+    cardId: string,
+    sourceListId: string,
+    direction: "left" | "right",
+  ) {
+    const currentLists = listRef.current;
+
+    const sourceListIndex = currentLists.findIndex(
+      (l) => l.id === sourceListId,
+    );
+    if (sourceListIndex === -1) return;
+
+    const targetListIndex =
+      direction === "left" ? sourceListIndex - 1 : sourceListIndex + 1;
+
+    if (targetListIndex < 0 || targetListIndex >= currentLists.length) return;
+
+    const sourceList = currentLists[sourceListIndex];
+    const targetList = currentLists[targetListIndex];
+
+    const cardToMove = sourceList.cards.find((c) => c.id === cardId);
+    if (!cardToMove) return;
+
+    const targetCards = targetList.cards;
+    const firstCard = targetCards[0];
+
+    const newOrder = generateKeyBetween(null, firstCard?.order ?? null);
+
+    const updatedCard = {
+      ...cardToMove,
+      list_id: targetList.id,
+      order: newOrder,
+    };
+
+    const updatedLists = currentLists.map((list) => {
+      if (list.id === sourceListId) {
+        return {
+          ...list,
+          cards: list.cards.filter((c) => c.id !== cardId),
+        };
+      }
+      if (list.id === targetList.id) {
+        return {
+          ...list,
+          cards: [updatedCard, ...list.cards],
+        };
+      }
+      return list;
+    });
+
+    setFocusedCardId(cardId);
+    setLists(updatedLists);
+
+    try {
+      await updateCardOrder(cardId, newOrder, targetList.id);
+    } catch {
+      console.error("Di chuyển card giữa các list thất bại");
+      setLists(updatedLists);
+    }
   }
 
   // auto scroll to the end of lists after creating a new list
@@ -314,6 +377,10 @@ export default function BoardView({ initialLists }: BoardViewProps) {
             onMoveList={moveListKeyBoard}
             onChange={(updatedList) => handleListChange(list.id, updatedList)}
             handleCardMoveAcrossLists={handleCardMoveAcrossLists}
+            onMoveAcrossLists={(cardId: string, direction: "left" | "right") =>
+              handleMoveCardAcrossLists(cardId, list.id, direction)
+            }
+            isFocused={focusedCardId}
           />
         ))}
 
