@@ -24,6 +24,8 @@ describe("Test list components (Vitest)", () => {
         onMoveList={() => {}}
         onChange={() => {}}
         handleCardMoveAcrossLists={() => {}}
+        onMoveAcrossLists={vi.fn()}
+        isFocused={null}
       />,
     );
 
@@ -46,6 +48,8 @@ describe("Test list components (Vitest)", () => {
         onMoveList={() => {}}
         onChange={() => {}}
         handleCardMoveAcrossLists={() => {}}
+        onMoveAcrossLists={vi.fn()}
+        isFocused={null}
       />,
     );
 
@@ -77,6 +81,8 @@ describe("Test list components (Vitest)", () => {
         onMoveList={() => {}}
         onChange={() => {}}
         handleCardMoveAcrossLists={() => {}}
+        onMoveAcrossLists={vi.fn()}
+        isFocused={null}
       />,
     );
 
@@ -100,6 +106,8 @@ describe("Test list components (Vitest)", () => {
         }}
         onChange={() => {}}
         handleCardMoveAcrossLists={() => {}}
+        onMoveAcrossLists={vi.fn()}
+        isFocused={null}
       />,
     );
 
