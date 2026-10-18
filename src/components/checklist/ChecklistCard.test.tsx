@@ -43,6 +43,9 @@ describe("ChecklistCard Component", () => {
         onChecklistDeleted={vi.fn()}
         onChecklistUpdated={vi.fn()}
         onChecklistDeleteFailed={vi.fn()}
+        onMove={vi.fn()}
+        onMoveItem={vi.fn()}
+        isFocused={null}
       />,
     );
 
@@ -62,6 +65,9 @@ describe("ChecklistCard Component", () => {
         onChecklistDeleted={vi.fn()}
         onChecklistUpdated={handleUpdated}
         onChecklistDeleteFailed={vi.fn()}
+        onMove={vi.fn()}
+        onMoveItem={vi.fn()}
+        isFocused={null}
       />,
     );
 
@@ -89,6 +95,9 @@ describe("ChecklistCard Component", () => {
         onChecklistDeleted={vi.fn()}
         onChecklistUpdated={handleUpdated}
         onChecklistDeleteFailed={vi.fn()}
+        onMove={vi.fn()}
+        onMoveItem={vi.fn()}
+        isFocused={null}
       />,
     );
 
@@ -114,6 +123,9 @@ describe("ChecklistCard Component", () => {
         onChecklistDeleted={vi.fn()}
         onChecklistUpdated={handleUpdated}
         onChecklistDeleteFailed={vi.fn()}
+        onMove={vi.fn()}
+        onMoveItem={vi.fn()}
+        isFocused={null}
       />,
     );
 
@@ -138,6 +150,9 @@ describe("ChecklistCard Component", () => {
         onChecklistDeleted={handleDelete}
         onChecklistUpdated={vi.fn()}
         onChecklistDeleteFailed={vi.fn()}
+        onMove={vi.fn()}
+        onMoveItem={vi.fn()}
+        isFocused={null}
       />,
     );
 
@@ -156,6 +171,9 @@ describe("ChecklistCard Component", () => {
         onChecklistDeleted={vi.fn()}
         onChecklistUpdated={vi.fn()}
         onChecklistDeleteFailed={vi.fn()}
+        onMove={vi.fn()}
+        onMoveItem={vi.fn()}
+        isFocused={null}
       />,
     );
 
@@ -179,6 +197,9 @@ describe("ChecklistCard Component", () => {
         onChecklistDeleted={vi.fn()}
         onChecklistUpdated={vi.fn()}
         onChecklistDeleteFailed={vi.fn()}
+        onMove={vi.fn()}
+        onMoveItem={vi.fn()}
+        isFocused={null}
       />,
     );
 
@@ -207,6 +228,9 @@ describe("ChecklistCard Component", () => {
         onChecklistDeleted={vi.fn()}
         onChecklistUpdated={handleUpdated}
         onChecklistDeleteFailed={vi.fn()}
+        onMove={vi.fn()}
+        onMoveItem={vi.fn()}
+        isFocused={null}
       />,
     );
 
@@ -234,6 +258,9 @@ describe("ChecklistCard Component", () => {
         onChecklistDeleted={vi.fn()}
         onChecklistUpdated={handleUpdated}
         onChecklistDeleteFailed={vi.fn()}
+        onMove={vi.fn()}
+        onMoveItem={vi.fn()}
+        isFocused={null}
       />,
     );
 
@@ -259,6 +286,9 @@ describe("ChecklistCard Component", () => {
         onChecklistDeleted={vi.fn()}
         onChecklistUpdated={handleUpdated}
         onChecklistDeleteFailed={vi.fn()}
+        onMove={vi.fn()}
+        onMoveItem={vi.fn()}
+        isFocused={null}
       />,
     );
 

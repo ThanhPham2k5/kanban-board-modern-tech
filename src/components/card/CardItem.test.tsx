@@ -42,6 +42,9 @@ describe("CardItem Component", () => {
         onCardDeleted={vi.fn()}
         onCardUpdated={vi.fn()}
         onCardDeleteFailed={vi.fn()}
+        onMove={vi.fn()}
+        onMoveAcrossLists={vi.fn()}
+        isFocused={null}
       />,
     );
 
@@ -62,6 +65,9 @@ describe("CardItem Component", () => {
         onCardDeleted={vi.fn()}
         onCardUpdated={vi.fn()}
         onCardDeleteFailed={vi.fn()}
+        onMove={vi.fn()}
+        onMoveAcrossLists={vi.fn()}
+        isFocused={null}
       />,
     );
 
@@ -81,6 +87,9 @@ describe("CardItem Component", () => {
         onCardDeleted={vi.fn()}
         onCardUpdated={vi.fn()}
         onCardDeleteFailed={vi.fn()}
+        onMove={vi.fn()}
+        onMoveAcrossLists={vi.fn()}
+        isFocused={null}
       />,
     );
 
@@ -103,6 +112,9 @@ describe("CardItem Component", () => {
         onCardDeleted={vi.fn()}
         onCardUpdated={handleUpdated}
         onCardDeleteFailed={vi.fn()}
+        onMove={vi.fn()}
+        onMoveAcrossLists={vi.fn()}
+        isFocused={null}
       />,
     );
 
@@ -124,6 +136,9 @@ describe("CardItem Component", () => {
         onCardDeleted={vi.fn()}
         onCardUpdated={handleUpdated}
         onCardDeleteFailed={vi.fn()}
+        onMove={vi.fn()}
+        onMoveAcrossLists={vi.fn()}
+        isFocused={null}
       />,
     );
 
@@ -153,6 +168,9 @@ describe("CardItem Component", () => {
         onCardDeleted={vi.fn()}
         onCardUpdated={handleUpdated}
         onCardDeleteFailed={vi.fn()}
+        onMove={vi.fn()}
+        onMoveAcrossLists={vi.fn()}
+        isFocused={null}
       />,
     );
 
@@ -181,6 +199,9 @@ describe("CardItem Component", () => {
         onCardDeleted={handleDelete}
         onCardUpdated={vi.fn()}
         onCardDeleteFailed={vi.fn()}
+        onMove={vi.fn()}
+        onMoveAcrossLists={vi.fn()}
+        isFocused={null}
       />,
     );
 

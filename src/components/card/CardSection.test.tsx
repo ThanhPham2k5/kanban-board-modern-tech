@@ -40,6 +40,8 @@ describe("CardSection Component", () => {
         cards={mockCards}
         onChange={vi.fn()}
         onCardMoveAcrossLists={vi.fn()}
+        onMoveAcrossLists={vi.fn()}
+        isFocused={null}
       />,
     );
 
@@ -59,6 +61,8 @@ describe("CardSection Component", () => {
         cards={mockCards}
         onChange={vi.fn()}
         onCardMoveAcrossLists={vi.fn()}
+        onMoveAcrossLists={vi.fn()}
+        isFocused={null}
       />,
     );
 
@@ -83,6 +87,8 @@ describe("CardSection Component", () => {
         cards={mockCards}
         onChange={vi.fn()}
         onCardMoveAcrossLists={vi.fn()}
+        onMoveAcrossLists={vi.fn()}
+        isFocused={null}
       />,
     );
 
@@ -114,6 +120,8 @@ describe("CardSection Component", () => {
         cards={mockCards}
         onChange={handleChange}
         onCardMoveAcrossLists={vi.fn()}
+        onMoveAcrossLists={vi.fn()}
+        isFocused={null}
       />,
     );
 
@@ -141,6 +149,8 @@ describe("CardSection Component", () => {
         cards={mockCards}
         onChange={handleChange}
         onCardMoveAcrossLists={vi.fn()}
+        onMoveAcrossLists={vi.fn()}
+        isFocused={null}
       />,
     );
 
@@ -163,6 +173,8 @@ describe("CardSection Component", () => {
         cards={mockCards}
         onChange={handleChange}
         onCardMoveAcrossLists={vi.fn()}
+        onMoveAcrossLists={vi.fn()}
+        isFocused={null}
       />,
     );
 
@@ -184,6 +196,8 @@ describe("CardSection Component", () => {
         cards={mockCards}
         onChange={handleChange}
         onCardMoveAcrossLists={vi.fn()}
+        onMoveAcrossLists={vi.fn()}
+        isFocused={null}
       />,
     );
 

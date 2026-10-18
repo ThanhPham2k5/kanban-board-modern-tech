@@ -24,6 +24,8 @@ describe("ChecklistItemRow Component", () => {
         onItemUpdated={vi.fn()}
         onItemDeleted={vi.fn()}
         onItemDeleteFailed={vi.fn()}
+        onMoveItem={vi.fn()}
+        isFocused={null}
       />,
     );
 
@@ -39,6 +41,8 @@ describe("ChecklistItemRow Component", () => {
         onItemUpdated={vi.fn()}
         onItemDeleted={vi.fn()}
         onItemDeleteFailed={vi.fn()}
+        onMoveItem={vi.fn()}
+        isFocused={null}
       />,
     );
 
@@ -56,6 +60,8 @@ describe("ChecklistItemRow Component", () => {
         onItemUpdated={handleUpdated}
         onItemDeleted={vi.fn()}
         onItemDeleteFailed={vi.fn()}
+        onMoveItem={vi.fn()}
+        isFocused={null}
       />,
     );
 
@@ -77,6 +83,8 @@ describe("ChecklistItemRow Component", () => {
         onItemUpdated={handleUpdated}
         onItemDeleted={vi.fn()}
         onItemDeleteFailed={vi.fn()}
+        onMoveItem={vi.fn()}
+        isFocused={null}
       />,
     );
 
@@ -104,6 +112,8 @@ describe("ChecklistItemRow Component", () => {
         onItemUpdated={handleUpdated}
         onItemDeleted={vi.fn()}
         onItemDeleteFailed={vi.fn()}
+        onMoveItem={vi.fn()}
+        isFocused={null}
       />,
     );
 
@@ -128,6 +138,8 @@ describe("ChecklistItemRow Component", () => {
         onItemUpdated={handleUpdated}
         onItemDeleted={vi.fn()}
         onItemDeleteFailed={vi.fn()}
+        onMoveItem={vi.fn()}
+        isFocused={null}
       />,
     );
 
@@ -153,6 +165,8 @@ describe("ChecklistItemRow Component", () => {
         onItemUpdated={vi.fn()}
         onItemDeleted={handleDeleted}
         onItemDeleteFailed={vi.fn()}
+        onMoveItem={vi.fn()}
+        isFocused={null}
       />,
     );
 
