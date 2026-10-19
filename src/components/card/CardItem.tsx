@@ -32,6 +32,9 @@ interface CardItemProps {
   onCardDeleted: (cardId: string) => void;
   onCardUpdated: (updatedCard: CardWithChecklists) => void;
   onCardDeleteFailed: (restoredCard: CardWithChecklists) => void;
+  onMove: (direction: "up" | "down") => void;
+  onMoveAcrossLists: (cardId: string, direction: "left" | "right") => void;
+  isFocused: string | null;
 }
 
 export function CardItem({
@@ -39,6 +42,9 @@ export function CardItem({
   onCardDeleted,
   onCardUpdated,
   onCardDeleteFailed,
+  onMove,
+  onMoveAcrossLists,
+  isFocused,
 }: CardItemProps) {
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [description, setDescription] = useState(card.description || "");
@@ -53,6 +59,14 @@ export function CardItem({
   const dragHandleRef = useRef<HTMLButtonElement | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
+
+  useEffect(() => {
+    if (isFocused === card.id && dragHandleRef.current) {
+      if (document.activeElement !== dragHandleRef.current) {
+        dragHandleRef.current.focus();
+      }
+    }
+  }, [card.id, isFocused]);
 
   useEffect(() => {
     const el = cardRef.current;
@@ -215,6 +229,23 @@ export function CardItem({
 
               <button
                 ref={dragHandleRef}
+                onKeyDown={(e) => {
+                  if (e.altKey) {
+                    if (e.key === "ArrowUp") {
+                      e.preventDefault();
+                      onMove("up");
+                    } else if (e.key === "ArrowDown") {
+                      e.preventDefault();
+                      onMove("down");
+                    } else if (e.key === "ArrowLeft") {
+                      e.preventDefault();
+                      onMoveAcrossLists(card.id, "left");
+                    } else if (e.key === "ArrowRight") {
+                      e.preventDefault();
+                      onMoveAcrossLists(card.id, "right");
+                    }
+                  }
+                }}
                 type="button"
                 aria-label="Kéo sắp xếp thẻ"
                 onClick={(e) => e.stopPropagation()}
@@ -264,6 +295,7 @@ export function CardItem({
                         if (e.key === "Enter") {
                           handleUpdateTitle();
                         } else if (e.key === "Escape") {
+                          e.stopPropagation();
                           setTitleInput(card.title);
                           setIsEditingTitle(false);
                         }
@@ -289,6 +321,7 @@ export function CardItem({
               <Button
                 variant="destructive"
                 size="sm"
+                aria-label="Xóa thẻ"
                 onClick={handleDeleteCard}
                 className="gap-1.5 shrink-0"
               >
