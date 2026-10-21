@@ -22,6 +22,7 @@ import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/el
 import { generateKeyBetween } from "fractional-indexing";
 import { GripVertical, Plus, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "../ui/toast";
 import { ChecklistItemRow } from "./ChecklistItemRow";
 
 interface ChecklistCardProps {
@@ -161,10 +162,20 @@ export function ChecklistCard({
 
     try {
       await updateChecklist(checklist.id, trimmed);
+      toast.add({
+        title: "Sửa tiêu đề checklist thành công!",
+        description: "Sửa tiêu đề checklist thành công.",
+        type: "success",
+      });
     } catch {
       console.error("Cập nhật tiêu đề thất bại");
       setTitleValue(checklist.title);
       onChecklistUpdated({ ...checklist, title: checklist.title });
+      toast.add({
+        title: "Sửa tiêu đề checklist thất bại!",
+        description: "Sửa tiêu đề checklist thất bại.",
+        type: "success",
+      });
     }
   }
 
@@ -240,6 +251,12 @@ export function ChecklistCard({
         ...checklist,
         items: finalItems,
       });
+
+      toast.add({
+        title: "Tạo item thành công!",
+        description: "Đã tạo item thành công.",
+        type: "success",
+      });
     } catch {
       console.error("Thêm mới checklist item thất bại");
       onChecklistUpdated({
@@ -248,6 +265,11 @@ export function ChecklistCard({
       });
       setNewItemText(content);
       setIsAddingItem(true);
+      toast.add({
+        title: "Tạo item thất bại!",
+        description: "Tạo item mới thất bại.",
+        type: "error",
+      });
     }
   }
 
@@ -256,9 +278,19 @@ export function ChecklistCard({
     onChecklistDeleted(checklist.id);
     try {
       await deleteChecklist(checklist.id);
+      toast.add({
+        title: "Xóa checklist thành công!",
+        description: "Xóa checklist thành công.",
+        type: "success",
+      });
     } catch {
       console.error("Xóa checklist thất bại");
       onChecklistDeleteFailed(checklistToRestore);
+      toast.add({
+        title: "Xóa checklist thất bại!",
+        description: "Xóa checklist thất bại.",
+        type: "error",
+      });
     }
   }
 
@@ -307,6 +339,13 @@ export function ChecklistCard({
             />
           ) : (
             <h3
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  setIsEditingTitle(true);
+                }
+              }}
               onClick={() => setIsEditingTitle(true)}
               className="block w-full text-sm font-semibold cursor-pointer select-none truncate px-2.5 py-1 rounded-md transition-colors hover:bg-muted/70 text-foreground"
               title="Bấm để đổi tiêu đề"

@@ -26,6 +26,7 @@ import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/el
 import { GripVertical, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { ChecklistSection } from "../checklist/ChecklistSection";
+import { toast } from "../ui/toast";
 
 interface CardItemProps {
   card: CardWithChecklists;
@@ -137,12 +138,21 @@ export function CardItem({
   async function handleToggleComplete(checked: boolean) {
     const previousState = card.is_completed;
     onCardUpdated({ ...card, is_completed: checked });
-
+    toast.add({
+      title: "Cập nhật trạng thái card thành công!",
+      description: "Cập nhật trạng thái card thành công.",
+      type: "success",
+    });
     try {
       await updateCard(card.id, { is_completed: checked });
     } catch {
       console.error("Cập nhật trạng thái hoàn thành thất bại");
       onCardUpdated({ ...card, is_completed: previousState });
+      toast.add({
+        title: "Cập nhật trạng thái card thất bại!",
+        description: "Cập nhật trạng thái card thất bại.",
+        type: "error",
+      });
     }
   }
 
@@ -160,10 +170,20 @@ export function CardItem({
 
     try {
       await updateCard(card.id, { title: trimmedTitle });
+      toast.add({
+        title: "Sửa tiêu đề card thành công!",
+        description: "Sửa tiêu đề card thành công.",
+        type: "success",
+      });
     } catch {
       console.error("Cập nhật tiêu đề thất bại");
       setTitleInput(previousTitle);
       onCardUpdated({ ...card, title: previousTitle });
+      toast.add({
+        title: "Sửa tiêu đề card thất bại!",
+        description: "Sửa tiêu đề card thất bại.",
+        type: "error",
+      });
     }
   }
 
@@ -175,10 +195,20 @@ export function CardItem({
 
     try {
       await updateCard(card.id, { description });
+      toast.add({
+        title: "Sửa mô tả card thành công!",
+        description: "Sửa mô tả card thành công.",
+        type: "success",
+      });
     } catch {
       console.error("Cập nhật mô tả thất bại");
       setDescription(previousDescription || "");
       onCardUpdated({ ...card, description: previousDescription });
+      toast.add({
+        title: "Sửa mô tả card thất bại!",
+        description: "Sửa mô tả card thất bại.",
+        type: "error",
+      });
     }
   }
 
@@ -188,9 +218,19 @@ export function CardItem({
     setIsOpenModal(false);
     try {
       await deleteCard(card.id);
+      toast.add({
+        title: "Xóa card thành công!",
+        description: "Xóa card thành công.",
+        type: "success",
+      });
     } catch {
       console.error("Xóa card thất bại");
       onCardDeleteFailed(cardToRestore);
+      toast.add({
+        title: "Xóa card thất bại!",
+        description: "Xóa card thất bại.",
+        type: "error",
+      });
     }
   }
 
@@ -203,7 +243,7 @@ export function CardItem({
       <Card
         ref={cardRef}
         onClick={() => setIsOpenModal(true)}
-        className={`relative cursor-pointer transition-all hover:shadow-md hover:border-primary/50 group ${
+        className={`relative cursor-pointer transition-all hover:shadow-md hover:border-primary/50 group py-2.5 px-3 ${
           isDragging ? "opacity-30" : "opacity-100"
         }`}
       >
@@ -215,7 +255,7 @@ export function CardItem({
           <div className="absolute -bottom-px left-1 right-1 h-0 border-t-2 border-primary z-20 pointer-events-none" />
         )}
 
-        <CardHeader>
+        <CardHeader className="p-0">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0 flex-1">
               <div onClick={(e) => e.stopPropagation()}>
@@ -254,7 +294,7 @@ export function CardItem({
                 <GripVertical className="h-4 w-4" />
               </button>
               <CardTitle
-                className={`text-base font-semibold truncate pt-0.5 ${
+                className={`text-sm font-semibold truncate pt-0.5 ${
                   card.is_completed ? "line-through text-muted-foreground" : ""
                 }`}
               >
@@ -300,12 +340,12 @@ export function CardItem({
                           setIsEditingTitle(false);
                         }
                       }}
-                      className="w-full text-lg font-bold h-9 px-2 bg-background shadow-inner"
+                      className="w-full text-base font-bold h-9 px-2 bg-background shadow-inner"
                     />
                   ) : (
                     <DialogTitle
                       onClick={() => setIsEditingTitle(true)}
-                      className={`w-full text-xl font-bold truncate cursor-pointer py-1 px-1.5 rounded-md transition-colors hover:bg-muted/60 ${
+                      className={`w-full text-base font-bold truncate cursor-pointer py-1 px-1.5 rounded-md transition-colors hover:bg-muted/60 ${
                         card.is_completed
                           ? "line-through text-muted-foreground"
                           : ""
@@ -330,7 +370,7 @@ export function CardItem({
             </div>
           </DialogHeader>
 
-          <div className="space-y-2 pt-2">
+          <div className="flex flex-col gap-2 pt-2">
             <label className="text-sm font-medium text-foreground">
               Mô tả chi tiết
             </label>

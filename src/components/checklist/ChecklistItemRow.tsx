@@ -20,6 +20,7 @@ import {
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 import { GripVertical, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "../ui/toast";
 
 interface ChecklistItemRowProps {
   item: ChecklistItem;
@@ -127,9 +128,19 @@ export function ChecklistItemRow({
     onItemUpdated({ ...item, is_checked: checked });
     try {
       await updateChecklistItem(item.id, { is_checked: checked });
+      toast.add({
+        title: "Cập nhật trạng thái item thành công!",
+        description: "Cập nhật trạng thái item thành công.",
+        type: "success",
+      });
     } catch {
       console.error("Cập nhật checkbox thất bại");
       onItemUpdated({ ...item, is_checked: item.is_checked });
+      toast.add({
+        title: "Cập nhật trạng thái item thất bại!",
+        description: "Cập nhật trạng thái item thất bại.",
+        type: "error",
+      });
     }
   }
 
@@ -146,10 +157,20 @@ export function ChecklistItemRow({
 
     try {
       await updateChecklistItem(item.id, { content: trimmed });
+      toast.add({
+        title: "Sửa tiêu đề item thành công!",
+        description: "Sửa tiêu đề item thành công.",
+        type: "success",
+      });
     } catch {
       console.error("Cập nhật nội dung checklist item thất bại");
       setContentValue(item.content);
       onItemUpdated({ ...item, content: item.content });
+      toast.add({
+        title: "Sửa tiêu đề item thất bại!",
+        description: "Sửa tiêu đề item thất bại.",
+        type: "error",
+      });
     }
   }
 
@@ -167,9 +188,19 @@ export function ChecklistItemRow({
     onItemDeleted(item.id);
     try {
       await deleteChecklistItem(item.id);
+      toast.add({
+        title: "Xóa item thành công!",
+        description: "Xóa item thành công.",
+        type: "success",
+      });
     } catch {
       console.error("Xóa checklist item thất bại");
       onItemDeleteFailed(itemToRestore);
+      toast.add({
+        title: "Xóa item thất bại!",
+        description: "Xóa item thất bại.",
+        type: "error",
+      });
     }
   }
 
@@ -218,6 +249,13 @@ export function ChecklistItemRow({
         checked={item.is_checked}
         onCheckedChange={(checked) => handleToggle(Boolean(checked))}
         id={`check-${item.id}`}
+        aria-label={`Hoàn thành mục: ${item.content}`}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            handleToggle(!item.is_checked);
+          }
+        }}
         className="shrink-0"
       />
 
@@ -233,6 +271,13 @@ export function ChecklistItemRow({
           />
         ) : (
           <span
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                setIsEditing(true);
+              }
+            }}
             onClick={() => setIsEditing(true)}
             className={`block w-full text-sm cursor-pointer select-none truncate px-2.5 py-1 rounded-md transition-colors hover:bg-muted/70 ${
               item.is_checked

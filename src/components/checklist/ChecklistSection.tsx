@@ -14,6 +14,7 @@ import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/ad
 import { generateKeyBetween } from "fractional-indexing";
 import { Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "../ui/toast";
 import { ChecklistCard } from "./ChecklistCard";
 
 interface ChecklistSectionProps {
@@ -374,11 +375,22 @@ export function ChecklistSection({
         item.id === tempId ? { ...created, items: item.items } : item,
       );
       onChange(finalChecklists);
+
+      toast.add({
+        title: "Tạo checklist mới thành công!",
+        description: "Đã tạo checklist mới thành công.",
+        type: "success",
+      });
     } catch {
       console.error("Thêm mới checklist thất bại");
       onChange(previousChecklists);
       setNewTitle(title);
       setIsAddingGroup(true);
+      toast.add({
+        title: "Tạo checklist thất bại!",
+        description: "Tạo checklist mới thất bại.",
+        type: "error",
+      });
     }
   }
 
@@ -447,6 +459,13 @@ export function ChecklistSection({
           </form>
         ) : (
           <Button
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                setIsAddingGroup(true);
+              }
+            }}
             variant="outline"
             size="sm"
             onClick={() => setIsAddingGroup(true)}

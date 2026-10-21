@@ -183,7 +183,7 @@ export default function ListContainer({
         </Button>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-3 py-1 flex flex-col gap-2 min-h-[10px]">
+      <div className="flex-1 overflow-y-auto px-3 pt-1 pb-4 flex flex-col gap-2 min-h-[10px]">
         <CardSection
           listId={list.id}
           cards={list.cards}

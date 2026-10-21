@@ -13,6 +13,7 @@ import {
 import { generateKeyBetween } from "fractional-indexing";
 import { Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "../ui/toast";
 import { CardItem } from "./CardItem";
 
 interface CardSectionProps {
@@ -245,11 +246,22 @@ export function CardSection({
         c.id === tempId ? { ...created, checklists: c.checklists } : c,
       );
       onChange(finalCards);
+
+      toast.add({
+        title: "Tạo thẻ mới thành công!",
+        description: "Đã tạo thẻ mới thành công.",
+        type: "success",
+      });
     } catch {
       console.error("Thêm mới card thất bại");
       onChange(previousCards);
       setNewTitle(title);
       setIsAddingCard(true);
+      toast.add({
+        title: "Tạo thẻ thất bại!",
+        description: "Tạo thẻ mới thất bại.",
+        type: "error",
+      });
     }
   }
 
@@ -323,7 +335,7 @@ export function CardSection({
             size="sm"
             aria-label="Thêm thẻ mới"
             onClick={() => setIsAddingCard(true)}
-            className="w-full justify-start gap-1.5 focus-visible:ring-0 focus-visible:ring-offset-0"
+            className="w-full h-auto justify-start gap-2 px-4 py-1 text-sm font-medium focus-visible:ring-0 focus-visible:ring-offset-0"
           >
             <Plus className="h-4 w-4" /> Thêm thẻ mới
           </Button>
