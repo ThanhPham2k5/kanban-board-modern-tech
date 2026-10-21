@@ -5,7 +5,13 @@ README.md
 .git
 .gitignore
 .env*.local
-playwright-report/
-test-results/
+
+# Test artifacts & configs (không cần trong image)
 tests/
 ci-results/
+playwright-report/
+test-results/
+coverage/
+vitest.config.ts
+vitest.setup.ts
+playwright.config.ts
