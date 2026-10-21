@@ -24,6 +24,7 @@ function LoginForm() {
         description: result.error,
         type: "error",
       });
+      router.push(`/login?message=Đăng nhập thất bại: ${result.error}`);
     } else if (result?.success) {
       toast.add({
         title: "Đăng nhập thành công!",
