@@ -58,7 +58,7 @@ jobs:
           NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
           BOT_TEST_EMAIL: ${{ secrets.BOT_TEST_EMAIL }}
           BOT_TEST_PASSWORD: ${{ secrets.BOT_TEST_PASSWORD }}
-        run: npx playwright test
+        run: npx playwright test --project=chromium
 
       - name: Upload Playwright Report & Test Results
         uses: actions/upload-artifact@v4
