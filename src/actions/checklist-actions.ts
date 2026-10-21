@@ -8,6 +8,7 @@ import {
   ListWithCards,
   UpdateChecklistItemInput,
 } from "@/lib/definitions";
+import { ChecklistItemSchema, ChecklistSchema } from "@/lib/schema";
 // import { supabase } from "@/lib/supabase";
 import { createClient } from "@/lib/server";
 
@@ -46,11 +47,22 @@ export async function createChecklist(
   input: CreateChecklistInput,
 ): Promise<ChecklistWithItems> {
   const supabase = await createClient();
+
+  const validationResult = ChecklistSchema.safeParse({
+    title: input.title,
+  });
+  if (!validationResult.success) {
+    const errorMsg = validationResult.error.issues
+      .map((issue) => issue.message)
+      .join(", ");
+    throw new Error(errorMsg);
+  }
+
   const { data, error } = await supabase
     .from("checklists")
     .insert({
       card_id: input.card_id,
-      title: input.title.trim(),
+      title: validationResult.data.title,
       order: input.order,
     })
     .select()
@@ -71,15 +83,18 @@ export async function updateChecklist(
   id: string,
   title: string,
 ): Promise<void> {
-  const cleanTitle = title.trim();
-  if (!cleanTitle) {
-    throw new Error("Tiêu đề không được để trống.");
+  const validationResult = ChecklistSchema.safeParse({ title });
+  if (!validationResult.success) {
+    const errorMsg = validationResult.error.issues
+      .map((issue) => issue.message)
+      .join(", ");
+    throw new Error(errorMsg);
   }
 
   const supabase = await createClient();
   const { error } = await supabase
     .from("checklists")
-    .update({ title: cleanTitle })
+    .update({ title: validationResult.data.title })
     .eq("id", id);
 
   if (error) {
@@ -117,9 +132,16 @@ export async function deleteChecklist(id: string): Promise<void> {
 export async function createChecklistItem(
   input: CreateChecklistItemInput,
 ): Promise<ChecklistItem> {
-  const cleanContent = input.content.trim();
-  if (!cleanContent) {
-    throw new Error("Nội dung công việc không được để trống.");
+  const validationResult = ChecklistItemSchema.safeParse({
+    content: input.content,
+    is_checked: false,
+  });
+
+  if (!validationResult.success) {
+    const errorMsg = validationResult.error.issues
+      .map((issue) => issue.message)
+      .join(", ");
+    throw new Error(errorMsg);
   }
 
   const supabase = await createClient();
@@ -127,7 +149,7 @@ export async function createChecklistItem(
     .from("checklistitems")
     .insert({
       checklist_id: input.checklist_id,
-      content: cleanContent,
+      content: validationResult.data.content,
       order: input.order,
       is_checked: false,
     })
@@ -150,12 +172,14 @@ export async function updateChecklistItem(
     throw new Error("Không có dữ liệu cần cập nhật.");
   }
 
-  if (updates.content !== undefined) {
-    updates.content = updates.content.trim();
-    if (!updates.content) {
-      throw new Error("Nội dung không được để trống.");
-    }
+  const validationResult = ChecklistItemSchema.partial().safeParse(updates);
+  if (!validationResult.success) {
+    const errorMsg = validationResult.error.issues
+      .map((issue) => issue.message)
+      .join(", ");
+    throw new Error(errorMsg);
   }
+  Object.assign(updates, validationResult.data);
 
   const supabase = await createClient();
   const { error } = await supabase

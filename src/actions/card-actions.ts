@@ -5,6 +5,7 @@ import {
   CreateCardInput,
   UpdateCardInput,
 } from "@/lib/definitions";
+import { CardSchema } from "@/lib/schema";
 import { createClient } from "@/lib/server";
 // import { supabase } from "@/lib/supabase";
 
@@ -12,13 +13,26 @@ export async function createCard(
   input: CreateCardInput,
 ): Promise<CardWithChecklists> {
   const supabase = await createClient();
+
+  const validationResult = CardSchema.safeParse({
+    title: input.title,
+    description: input.description,
+  });
+  if (!validationResult.success) {
+    const errorMsg = validationResult.error.issues
+      .map((issue) => issue.message)
+      .join(", ");
+
+    throw new Error(errorMsg);
+  }
+
   const { data, error } = await supabase
     .from("cards")
     .insert({
       list_id: input.list_id,
-      title: input.title.trim(),
+      title: validationResult.data.title,
       order: input.order,
-      description: input.description,
+      description: validationResult.data.description,
       is_completed: false,
     })
     .select()
@@ -48,12 +62,14 @@ export async function updateCard(
     throw new Error("Không có dữ liệu cần cập nhật.");
   }
 
-  if (updates.title !== undefined) {
-    updates.title = updates.title.trim();
-    if (!updates.title) {
-      throw new Error("Tiêu đề không được để trống.");
-    }
+  const validationResult = CardSchema.partial().safeParse(updates);
+  if (!validationResult.success) {
+    const errorMsg = validationResult.error.issues
+      .map((issue) => issue.message)
+      .join(", ");
+    throw new Error(errorMsg);
   }
+  Object.assign(updates, validationResult.data);
 
   const { error } = await supabase
     .from("cards")
