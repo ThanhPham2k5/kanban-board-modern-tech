@@ -23,6 +23,8 @@ export async function getFullData(): Promise<ListWithCards[]> {
     return [];
   }
 
+  console.log("[SERVER] getFullData chạy lúc", new Date().toISOString());
+
   const { data, error } = await supabase
     .from("lists")
     .select("*,cards (*,checklists (*,items: checklistitems (*)))")
@@ -39,6 +41,8 @@ export async function getFullData(): Promise<ListWithCards[]> {
     console.error("Lỗi tải dữ liệu:", error.message);
     return [];
   }
+
+  console.log("[SERVER] Supabase trả về", data?.length ?? 0, "list");
 
   return data ?? [];
 }
