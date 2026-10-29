@@ -126,7 +126,7 @@ export default function BoardView({ initialLists }: BoardViewProps) {
       await updateCardOrder(cardId, newOrder, targetList.id);
     } catch {
       console.error("Di chuyển card giữa các list thất bại");
-      setLists(updatedLists);
+      setLists(currentLists);
     }
   }
 
