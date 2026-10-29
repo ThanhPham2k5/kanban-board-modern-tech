@@ -1,0 +1,17 @@
+node_modules
+npm-debug.log
+README.md
+.next
+.git
+.gitignore
+.env*.local
+
+# Test artifacts & configs (không cần trong image)
+tests/
+ci-results/
+playwright-report/
+test-results/
+coverage/
+vitest.config.ts
+vitest.setup.ts
+playwright.config.ts
