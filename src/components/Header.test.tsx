@@ -1,4 +1,4 @@
-import { logout } from "@/actions/auth-action";
+import { logout } from "../actions/auth-action";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useRouter } from "next/navigation";
