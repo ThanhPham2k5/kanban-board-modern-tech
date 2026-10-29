@@ -1,10 +1,10 @@
 import { addListAction } from "../actions/list-actions";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import BoardView from "./BoardView";
 
-vi.mock("@/actions/list-actions", () => ({
+vi.mock("../actions/list-actions", () => ({
   addListAction: vi.fn().mockResolvedValue({ id: "l-new", success: true }),
 }));
 

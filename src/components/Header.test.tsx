@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, Mock, vi } from "vitest";
 import Header from "./Header";
 import { toast } from "./ui/toast";
 
-vi.mock("@/actions/auth-action", () => ({
+vi.mock("../actions/auth-action", () => ({
   logout: vi.fn(),
 }));
 
