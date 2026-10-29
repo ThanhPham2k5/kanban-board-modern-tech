@@ -309,8 +309,9 @@ export default function BoardView({ initialLists }: BoardViewProps) {
     const sortedLists = updatedLists.sort((a, b) =>
       a.order < b.order ? -1 : a.order > b.order ? 1 : 0,
     );
+    const oldList = prevLists;
     setLists(sortedLists);
-    updateListOrderAction(id, newOrderString).catch(console.error);
+    updateListOrderAction(id, newOrderString).catch(() => setLists(oldList)); // roll back
   };
 
   useEffect(() => {
